@@ -3,13 +3,15 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Mic, MicOff, Volume2, Loader2, Bot, Sparkles } from "lucide-react";
 import { sendVoiceChat } from "../api/voice";
 import { convertToWav } from "../utils/audioUtils";
+import { DEMO_MODE, DEMO_DELAY_MS } from "../config/demoMode";
+import { getNextVoiceMock, resetVoiceIndex } from "../api/mockData";
+
+// ── Yordamchi funksiyalar ─────────────────────────────────────────────────────
 
 function getSupportedMimeType() {
   const types = [
-    "audio/webm;codecs=opus",
-    "audio/webm",
-    "audio/ogg;codecs=opus",
-    "audio/ogg",
+    "audio/webm;codecs=opus", "audio/webm",
+    "audio/ogg;codecs=opus",  "audio/ogg",
     "audio/mp4",
   ];
   for (const type of types) {
@@ -18,11 +20,58 @@ function getSupportedMimeType() {
   return "";
 }
 
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+/**
+ * Browser SpeechSynthesis orqali matnni ovozga o'qiydi.
+ * Demo rejimda AISHA TTS o'rniga ishlatiladi.
+ * uz-UZ → ru-RU → en-US ketma-ketlikda urinadi.
+ */
+function speakWithBrowser(text) {
+  return new Promise((resolve) => {
+    if (!window.speechSynthesis) { resolve(); return; }
+
+    window.speechSynthesis.cancel();
+
+    const trySpeak = () => {
+      const voices = window.speechSynthesis.getVoices();
+      const voice =
+        voices.find((v) => v.lang.startsWith("uz")) ||
+        voices.find((v) => v.lang.startsWith("ru")) ||
+        voices.find((v) => v.lang.startsWith("en")) ||
+        null;
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      if (voice) utterance.voice = voice;
+      utterance.lang  = voice?.lang || "uz-UZ";
+      utterance.rate  = 0.88;
+      utterance.pitch = 1.0;
+      utterance.onend   = resolve;
+      utterance.onerror = () => resolve();
+      window.speechSynthesis.speak(utterance);
+    };
+
+    // Voices ro'yxati async yuklanadi — tayyor bo'lishini kutamiz
+    if (window.speechSynthesis.getVoices().length > 0) {
+      trySpeak();
+    } else {
+      window.speechSynthesis.onvoiceschanged = () => {
+        window.speechSynthesis.onvoiceschanged = null;
+        trySpeak();
+      };
+      // 300ms ichida yuklansa ham boshlaydi
+      setTimeout(trySpeak, 300);
+    }
+  });
+}
+
+// ── Asosiy komponent ─────────────────────────────────────────────────────────
+
 export default function VoiceModal({ onClose }) {
   const [messages, setMessages] = useState([]);
   // idle | recording | converting | loading | playing
   const [status, setStatus] = useState("idle");
-  const [error, setError] = useState("");
+  const [error,  setError]  = useState("");
 
   const mediaRecorderRef = useRef(null);
   const chunksRef        = useRef([]);
@@ -30,19 +79,34 @@ export default function VoiceModal({ onClose }) {
   const audioRef         = useRef(null);
   const scrollRef        = useRef(null);
 
+  // Modal ochilganda demo index'ini qayta hisoblaydi
+  useEffect(() => {
+    if (DEMO_MODE) resetVoiceIndex();
+  }, []);
+
+  // Yangi xabar kelganda pastga scroll
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, status]);
 
-  // Sahifani scroll qilishdan oldini olish
+  // Modal ochiq bo'lganda body scroll'ni bloklaydi
   useEffect(() => {
     document.body.style.overflow = "hidden";
     return () => { document.body.style.overflow = ""; };
   }, []);
 
+  // ── Recording ──────────────────────────────────────────────────────────────
+
   const startRecording = async () => {
     if (status !== "idle") return;
     setError("");
+
+    if (DEMO_MODE) {
+      // Demo: haqiqiy mikrofon ishlatilmaydi, faqat "recording" effekti ko'rsatiladi
+      setStatus("recording");
+      return;
+    }
+
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const mimeType = getSupportedMimeType();
@@ -56,10 +120,10 @@ export default function VoiceModal({ onClose }) {
       };
 
       mediaRecorderRef.current.onstop = async () => {
-        const mime = mimeTypeRef.current || "audio/webm";
+        const mime    = mimeTypeRef.current || "audio/webm";
         const rawBlob = new Blob(chunksRef.current, { type: mime });
         stream.getTracks().forEach((t) => t.stop());
-        await processAudio(rawBlob);
+        await processRealAudio(rawBlob);
       };
 
       mediaRecorderRef.current.start();
@@ -70,31 +134,59 @@ export default function VoiceModal({ onClose }) {
   };
 
   const stopRecording = () => {
+    if (DEMO_MODE) {
+      processDemoAudio();
+      return;
+    }
     if (mediaRecorderRef.current?.state === "recording") {
       mediaRecorderRef.current.stop();
     }
     setStatus("converting");
   };
 
-  const processAudio = async (rawBlob) => {
+  // ── Demo pipeline ──────────────────────────────────────────────────────────
+
+  const processDemoAudio = async () => {
+    setStatus("loading");
+    await sleep(DEMO_DELAY_MS);
+
+    const mock = getNextVoiceMock();
+
+    setMessages((prev) => [
+      ...prev,
+      { role: "user", text: mock.user_text },
+    ]);
+
+    // Biroz kutib bot javobini ko'rsatamiz (tabiiy ko'rinish)
+    await sleep(300);
+    setMessages((prev) => [...prev, { role: "bot", text: mock.bot_response }]);
+
+    // Browser SpeechSynthesis bilan o'qiydi
+    setStatus("playing");
+    await speakWithBrowser(mock.bot_response);
+    setStatus("idle");
+  };
+
+  // ── Haqiqiy pipeline ───────────────────────────────────────────────────────
+
+  const processRealAudio = async (rawBlob) => {
     try {
       // 1. WebM → WAV (AISHA STT WAV talab qiladi)
       setStatus("converting");
       const { blob: wavBlob, ext } = await convertToWav(rawBlob);
 
-      // 2. STT → RAG → TTS (backend pipeline)
+      // 2. STT → RAG → TTS
       setStatus("loading");
       const res = await sendVoiceChat(wavBlob, "mentor", ext);
       const { user_text, bot_response, audio_url } = res.data;
 
-      // 3. Xabarlarni qo'shish
       setMessages((prev) => [
         ...prev,
         { role: "user", text: user_text },
         { role: "bot",  text: bot_response },
       ]);
 
-      // 4. Audio ijro etish
+      // 3. Audio ijro
       if (audio_url) {
         if (audioRef.current) audioRef.current.pause();
         audioRef.current = new Audio(audio_url);
@@ -112,26 +204,31 @@ export default function VoiceModal({ onClose }) {
     }
   };
 
-  const handleMicDown  = () => { if (status === "idle") startRecording(); };
-  const handleMicUp    = () => { if (status === "recording") stopRecording(); };
+  // ── Event handlers ─────────────────────────────────────────────────────────
 
-  const statusText = {
+  const handleMicDown = () => { if (status === "idle") startRecording(); };
+  const handleMicUp   = () => { if (status === "recording") stopRecording(); };
+
+  // ── UI helpers ─────────────────────────────────────────────────────────────
+
+  const STATUS_TEXT = {
     idle:       "Bosib turing va gapiring",
     recording:  "🔴 Eshitilmoqda — qo'yib yuboring",
     converting: "🔄 Audio tayyorlanmoqda...",
     loading:    "⏳ Javob tayyorlanmoqda...",
     playing:    "🔊 Javob o'qilmoqda...",
-  }[status];
-
-  const statusColor = {
+  };
+  const STATUS_COLOR = {
     idle:       "text-gray-400",
     recording:  "text-red-500",
     converting: "text-violet-500",
     loading:    "text-amber-500",
     playing:    "text-blue-600",
-  }[status];
+  };
 
   const isBusy = status === "loading" || status === "playing" || status === "converting";
+
+  // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
     <motion.div
@@ -139,7 +236,7 @@ export default function VoiceModal({ onClose }) {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
-      style={{ background: "rgba(15,23,42,0.8)", backdropFilter: "blur(8px)" }}
+      style={{ background: "rgba(15,23,42,0.82)", backdropFilter: "blur(8px)" }}
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <motion.div
@@ -151,22 +248,29 @@ export default function VoiceModal({ onClose }) {
         style={{ maxHeight: "88vh" }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* ── Header ──────────────────────────────── */}
+        {/* ── Header ── */}
         <div
           className="px-5 py-4 shrink-0 relative overflow-hidden"
           style={{ background: "linear-gradient(135deg, #172554 0%, #1e3a8a 60%, #1d4ed8 100%)" }}
         >
-          {/* dot pattern */}
-          <div className="absolute inset-0 bg-dots opacity-20" />
-
+          <div className="absolute inset-0 bg-dots opacity-20 pointer-events-none" />
           <div className="relative flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-2xl bg-white/15 border border-white/20 flex items-center justify-center">
                 <Sparkles size={17} className="text-gold" />
               </div>
               <div>
-                <p className="font-bold text-white text-sm leading-tight">Zulfiya — Ovozli Suhbat</p>
-                <p className="text-blue-300/80 text-[11px] mt-0.5">1:1 ovozli mentor suhbati</p>
+                <div className="flex items-center gap-2">
+                  <p className="font-bold text-white text-sm leading-tight">Zulfiya — Ovozli Suhbat</p>
+                  {DEMO_MODE && (
+                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-gold/20 text-gold border border-gold/30">
+                      DEMO
+                    </span>
+                  )}
+                </div>
+                <p className="text-blue-300/80 text-[11px] mt-0.5">
+                  {DEMO_MODE ? "Demo rejim — oldindan tayyorlangan javoblar" : "1:1 ovozli mentor suhbati"}
+                </p>
               </div>
             </div>
             <button
@@ -178,7 +282,7 @@ export default function VoiceModal({ onClose }) {
           </div>
         </div>
 
-        {/* ── Conversation ─────────────────────────── */}
+        {/* ── Conversation ── */}
         <div className="flex-1 overflow-y-auto scrollbar-hide p-4 space-y-3">
           {messages.length === 0 && (
             <motion.div
@@ -210,13 +314,11 @@ export default function VoiceModal({ onClose }) {
                 </div>
               )}
               <div className="max-w-[82%] space-y-1">
-                <div
-                  className={`px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed ${
-                    msg.role === "user"
-                      ? "bg-primary-700 text-white rounded-br-sm shadow-sm"
-                      : "bg-gray-100 text-gray-800 rounded-bl-sm"
-                  }`}
-                >
+                <div className={`px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed ${
+                  msg.role === "user"
+                    ? "bg-primary-700 text-white rounded-br-sm shadow-sm"
+                    : "bg-gray-100 text-gray-800 rounded-bl-sm"
+                }`}>
                   {msg.text}
                 </div>
                 <p className={`text-[10px] text-gray-400 ${msg.role === "user" ? "text-right" : "pl-1"}`}>
@@ -226,7 +328,7 @@ export default function VoiceModal({ onClose }) {
             </motion.div>
           ))}
 
-          {/* Loading bubble */}
+          {/* Typing indicator */}
           {status === "loading" && (
             <motion.div
               initial={{ opacity: 0, y: 8 }}
@@ -239,9 +341,7 @@ export default function VoiceModal({ onClose }) {
               <div className="bg-gray-100 px-4 py-3 rounded-2xl rounded-bl-sm">
                 <div className="flex gap-1">
                   {[0, 1, 2].map((j) => (
-                    <motion.div
-                      key={j}
-                      className="w-1.5 h-1.5 bg-gray-400 rounded-full"
+                    <motion.div key={j} className="w-1.5 h-1.5 bg-gray-400 rounded-full"
                       animate={{ y: [0, -4, 0] }}
                       transition={{ repeat: Infinity, duration: 0.7, delay: j * 0.15 }}
                     />
@@ -254,12 +354,11 @@ export default function VoiceModal({ onClose }) {
           <div ref={scrollRef} />
         </div>
 
-        {/* ── Controls ─────────────────────────────── */}
+        {/* ── Controls ── */}
         <div className="px-6 pb-8 pt-4 flex flex-col items-center gap-3 shrink-0 border-t border-gray-100 bg-gray-50/50">
 
-          {/* Status */}
-          <p className={`text-xs font-medium transition-colors ${statusColor}`}>
-            {statusText}
+          <p className={`text-xs font-medium transition-colors ${STATUS_COLOR[status]}`}>
+            {STATUS_TEXT[status]}
           </p>
 
           {/* Waveform */}
@@ -272,11 +371,8 @@ export default function VoiceModal({ onClose }) {
                 className="flex items-center gap-1 h-6"
               >
                 {[...Array(7)].map((_, i) => (
-                  <div
-                    key={i}
-                    className="w-1.5 bg-red-400 rounded-full wave-bar"
-                    style={{ animationDelay: `${i * 0.08}s` }}
-                  />
+                  <div key={i} className="w-1.5 bg-red-400 rounded-full wave-bar"
+                    style={{ animationDelay: `${i * 0.08}s` }} />
                 ))}
               </motion.div>
             )}
@@ -286,13 +382,11 @@ export default function VoiceModal({ onClose }) {
           <div className="relative">
             {status === "recording" && (
               <>
-                <motion.div
-                  className="absolute inset-0 rounded-full bg-red-400"
+                <motion.div className="absolute inset-0 rounded-full bg-red-400"
                   animate={{ scale: [1, 1.5, 1], opacity: [0.4, 0, 0.4] }}
                   transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
                 />
-                <motion.div
-                  className="absolute inset-0 rounded-full bg-red-300"
+                <motion.div className="absolute inset-0 rounded-full bg-red-300"
                   animate={{ scale: [1, 1.85, 1], opacity: [0.2, 0, 0.2] }}
                   transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.3 }}
                 />
