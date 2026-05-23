@@ -222,19 +222,19 @@ export const SIMULATOR_SCENARIOS = [
         audio_url: "https://cdn.aisha.group/backend/tts_audios/07930e40-b6a5-459e-a2ca-28ec7c3d9325.wav",
       },
       {
-        client_message: "Agar muddatdan oldin pulimni olsam nima bo'ladi?",
-        hint: "Asosiy summa qaytariladi, lekin foizlar yo'qolishini tushuntiring.",
-        correct_keywords: ["asosiy summa", "foiz", "yo'qoladi", "muddatdan oldin", "qaytariladi"],
-        score: 15,
-        demo_voice_answer: "Muddatdan oldin olinsa, asosiy summa to'liq qaytariladi, lekin hisoblangan foizlar yo'qoladi.",
-        audio_url: "https://cdn.aisha.group/backend/tts_audios/d5c012d7-9d30-4034-b5f8-62085586287a.wav",
-      },
-      {
         client_message: "Minimal qancha pul qo'yishim kerak?",
         hint: "Naqd va o'tkazma uchun minimal summani ayting.",
         correct_keywords: ["500", "ming", "minimal", "naqd", "million", "o'tkazma"],
         score: 10,
         demo_voice_answer: "Naqd pul uchun minimal summa 500 ming so'm, o'tkazma orqali ochilsa 1 million so'm.",
+        audio_url: "https://cdn.aisha.group/backend/tts_audios/d5c012d7-9d30-4034-b5f8-62085586287a.wav",
+      },
+      {
+        client_message: "Agar muddatdan oldin pulimni olsam nima bo'ladi?",
+        hint: "Asosiy summa qaytariladi, lekin foizlar yo'qolishini tushuntiring.",
+        correct_keywords: ["asosiy summa", "foiz", "yo'qoladi", "muddatdan oldin", "qaytariladi"],
+        score: 15,
+        demo_voice_answer: "Muddatdan oldin olinsa, asosiy summa to'liq qaytariladi, lekin hisoblangan foizlar yo'qoladi.",
         audio_url: "https://cdn.aisha.group/backend/tts_audios/1f03cc0f-8b92-4a53-aa05-35d3c03de5f3.wav",
       },
       {
