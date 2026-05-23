@@ -288,9 +288,9 @@ export default function DifficultClient({ scenario, mode = "text", onComplete })
               <div className="flex items-center justify-between mb-1">
                 <span className="text-xs font-semibold text-orange-700">Mijoz</span>
                 {/* Manual audio replay — no auto-TTS */}
-                {scenario.steps?.[step]?.audio_url && (
+                {(step === 0 ? scenario.audio_url : scenario.steps?.[step]?.audio_url) && (
                   <button
-                    onClick={() => playClientAudio(scenario.steps[step].audio_url)}
+                    onClick={() => playClientAudio(step === 0 ? scenario.audio_url : scenario.steps[step].audio_url)}
                     className="text-orange-400 hover:text-orange-600 transition-colors"
                     title="Ovozni eshiting"
                   >

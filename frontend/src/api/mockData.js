@@ -121,7 +121,7 @@ export const SIMULATOR_SCENARIOS = [
     difficulty:    "EASY",
     max_score:     50,
     initial_message: "Salom, men biznes uchun kredit olmoqchiman. Qanday qilsam bo'ladi?",
-    audio_url: "https://cdn.aisha.group/backend/tts_audios/955651bc-a208-4b9f-b576-802ba5ace4da.wav",
+    audio_url: "https://cdn.aisha.group/backend/tts_audios/97114735-986d-47f6-9b57-d9d1d9d87d2a.wav",
     steps: [
       {
         client_message: "50 million so'm kerak. Qancha foizda berasiz va qanday muddatga?",
@@ -137,7 +137,7 @@ export const SIMULATOR_SCENARIOS = [
         correct_keywords: ["kredit tarixi", "nbki", "byuro", "tekshiriladi", "salbiy"],
         score: 10,
         demo_voice_answer: "Ha, kredit tarixi NBKI kredit byurosi orqali tekshiriladi. Agar salbiy tarix bo'lsa kredit berilmasligi mumkin.",
-        audio_url: "https://cdn.aisha.group/backend/tts_audios/979be425-a437-46d0-9909-ec0fb567a310.wav",
+        audio_url: "https://cdn.aisha.group/backend/tts_audios/6d13f373-36a8-4fcf-ac61-b15d266440c7.wav",
       },
       {
         client_message: "Qanday hujjatlar kerak? To'liq ro'yxatini bering.",
@@ -145,7 +145,7 @@ export const SIMULATOR_SCENARIOS = [
         correct_keywords: ["pasport", "jshshir", "daromad", "garov", "hujjat"],
         score: 15,
         demo_voice_answer: "Pasport, JSHSHIR, so'nggi 6 oylik daromad ma'lumotnomasi va garov hujjatlari kerak bo'ladi.",
-        audio_url: "https://cdn.aisha.group/backend/tts_audios/f1f1bad7-68fc-46c4-aed8-a8cce36b55ea.wav",
+        audio_url: "https://cdn.aisha.group/backend/tts_audios/fe767e68-85da-4930-967b-2fc93e278a8f.wav",
       },
       {
         client_message: "Qaror qachon chiqadi? Ko'p kutishim kerakmi?",
@@ -153,7 +153,7 @@ export const SIMULATOR_SCENARIOS = [
         correct_keywords: ["3 ish kuni", "qo'mita", "qaror", "kun", "muddati"],
         score: 15,
         demo_voice_answer: "Kredit qo'mitasi 3 ish kuni ichida qaror qabul qiladi. Katta kreditlar uchun Bosh ofis ham tasdiqlaydi.",
-        audio_url: "https://cdn.aisha.group/backend/tts_audios/a473c979-d309-4cd7-8484-8089bb8a8745.wav",
+        audio_url: "https://cdn.aisha.group/backend/tts_audios/d609d6c4-2408-4f84-ae7f-06d37bd0b888.wav",
       },
     ],
   },
@@ -166,7 +166,7 @@ export const SIMULATOR_SCENARIOS = [
     difficulty:    "MEDIUM",
     max_score:     60,
     initial_message: "Uch kundan beri kartamdan pul ololmayapman! Bu nima degani, tushuntiring!",
-    audio_url: "https://cdn.aisha.group/backend/tts_audios/de84179e-b170-4791-893a-79fadec89a9a.wav",
+    audio_url: "https://cdn.aisha.group/backend/tts_audios/fd660396-ebbd-401e-b7f7-18196e4c28f0.wav",
     steps: [
       {
         client_message: "Kecha ATMdan pul olmoqchi bo'ldim, 'karta bloklangan' dedi!",
@@ -182,7 +182,7 @@ export const SIMULATOR_SCENARIOS = [
         correct_keywords: ["limit", "50 million", "internet banking", "mobil", "ko'rish", "nazorat"],
         score: 15,
         demo_voice_answer: "Kunlik limit 50 million so'm. Internet banking yoki mobil ilovada limitni real vaqtda kuzatib borishingiz mumkin.",
-        audio_url: "https://cdn.aisha.group/backend/tts_audios/5fd0c7f0-8d43-4544-a3bb-d6215ee44040.wav",
+        audio_url: "https://cdn.aisha.group/backend/tts_audios/1d1f5e00-184c-41ce-ab0c-59c97fba8c37.wav",
       },
       {
         client_message: "Endi nima qilaman, kartam qachon ochilar?",
@@ -190,7 +190,7 @@ export const SIMULATOR_SCENARIOS = [
         correct_keywords: ["200-00-00", "qo'ng'iroq", "filial", "mobil ilova", "blok", "ochish"],
         score: 15,
         demo_voice_answer: "Kartani ochish uchun +998 71 200-00-00 ga qo'ng'iroq qiling yoki mobil ilovada blokdan chiqaring. Bu 5 daqiqa oladi.",
-        audio_url: "https://cdn.aisha.group/backend/tts_audios/553d430d-8dae-4810-8eac-c4ae1773b470.wav",
+        audio_url: "https://cdn.aisha.group/backend/tts_audios/15e9e98f-b1eb-429c-9330-2a7a27f96f9b.wav",
       },
       {
         client_message: "Keyingi safar bunday bo'lmasligi uchun nima qilishim kerak?",
@@ -198,7 +198,7 @@ export const SIMULATOR_SCENARIOS = [
         correct_keywords: ["sms", "xabarnoma", "limit", "nazorat", "internet banking", "tavsiya"],
         score: 15,
         demo_voice_answer: "SMS xabarnomani ulang — har bir operatsiyadan habar olasiz. Internet bankingda limitni ham kuzatib boring.",
-        audio_url: "https://cdn.aisha.group/backend/tts_audios/dbd6b3d0-3dfd-4ef8-a9e3-494723b041c4.wav",
+        audio_url: "https://cdn.aisha.group/backend/tts_audios/36cbc317-eee7-48de-ad58-8bc92bfc4839.wav",
       },
     ],
   },
@@ -211,7 +211,7 @@ export const SIMULATOR_SCENARIOS = [
     difficulty:    "HARD",
     max_score:     70,
     initial_message: "Salom, pullarimni depozitga qo'ymoqchiman. Sizda qanday imkoniyatlar bor?",
-    audio_url: "https://cdn.aisha.group/backend/tts_audios/813fce83-dfe6-41fb-8cef-490e6c867323.wav",
+    audio_url: "https://cdn.aisha.group/backend/tts_audios/1f03cc0f-8b92-4a53-aa05-35d3c03de5f3.wav",
     steps: [
       {
         client_message: "Eng yuqori foiz qanday va necha oyga?",
@@ -227,7 +227,7 @@ export const SIMULATOR_SCENARIOS = [
         correct_keywords: ["asosiy summa", "foiz", "yo'qoladi", "muddatdan oldin", "qaytariladi"],
         score: 15,
         demo_voice_answer: "Muddatdan oldin olinsa, asosiy summa to'liq qaytariladi, lekin hisoblangan foizlar yo'qoladi.",
-        audio_url: "https://cdn.aisha.group/backend/tts_audios/8fcb9bb6-ceb8-40d8-861a-fc4089eaf0b7.wav",
+        audio_url: "https://cdn.aisha.group/backend/tts_audios/d5c012d7-9d30-4034-b5f8-62085586287a.wav",
       },
       {
         client_message: "Minimal qancha pul qo'yishim kerak?",
@@ -235,7 +235,7 @@ export const SIMULATOR_SCENARIOS = [
         correct_keywords: ["500", "ming", "minimal", "naqd", "million", "o'tkazma"],
         score: 10,
         demo_voice_answer: "Naqd pul uchun minimal summa 500 ming so'm, o'tkazma orqali ochilsa 1 million so'm.",
-        audio_url: "https://cdn.aisha.group/backend/tts_audios/5cb3ddfd-2068-43c8-99d9-0a2de810cf23.wav",
+        audio_url: "https://cdn.aisha.group/backend/tts_audios/1e375f59-e6e2-4d4c-8675-2f980aa836c2.wav",
       },
       {
         client_message: "Oylik foiz olish imkoni bormi? Har oy hisobimga tushsa yaxshi bo'lardi.",
@@ -243,7 +243,7 @@ export const SIMULATOR_SCENARIOS = [
         correct_keywords: ["gulbahor", "oylik", "12 oy", "20", "foiz", "to'lanadi"],
         score: 15,
         demo_voice_answer: "'Gulbahor' depoziti 12 oyga, yillik 20 foiz. Har oy foiz to'g'ridan-to'g'ri hisobingizga o'tkaziladi.",
-        audio_url: "https://cdn.aisha.group/backend/tts_audios/36f21178-f21b-4ec8-812e-ef7a7f8aea94.wav",
+        audio_url: "https://cdn.aisha.group/backend/tts_audios/e843f36f-0078-4032-a761-5a08593dcc0f.wav",
       },
       {
         client_message: "Xo'p, 'Istiqbol' depozitini ochamiz. Nima kerak?",
@@ -251,7 +251,7 @@ export const SIMULATOR_SCENARIOS = [
         correct_keywords: ["pasport", "ariza", "shartnoma", "pul", "hisob", "imzo"],
         score: 15,
         demo_voice_answer: "Pasportingizni olib keling, ariza to'ldirasiz, shartnomani imzolaysiz va pul qo'yasiz. 15 daqiqada bajariladi.",
-        audio_url: "https://cdn.aisha.group/backend/tts_audios/7bdde0d1-8411-4e2b-8b65-3e3a51d17f9e.wav",
+        audio_url: "https://cdn.aisha.group/backend/tts_audios/896c2ec1-5125-4ccb-a1d3-2922d43018bf.wav",
       },
     ],
   },
