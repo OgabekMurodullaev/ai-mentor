@@ -381,3 +381,43 @@ Javob:""",
         except Exception as e:
             logger.error(f"RAG xato: {e}")
             return "Texnik muammo yuz berdi. Qayta urining."
+
+    def get_voice_answer(self, question: str) -> str:
+        """
+        Ovozli suhbat uchun optimallashtirilgan javob.
+        - Faqat 1-2 qisqa jumla (TTS tezroq ishlashi uchun)
+        - Tabiiy suhbat ohangi
+        """
+        try:
+            self._initialize()
+            context = "\n\n---\n\n".join(doc.strip() for doc in BANK_DOCUMENTS)
+            voice_prompt = f"""Sen Turonbank'ning AI-Mentori — Zulfiya'san.
+Quyidagi savol uchun FAQAT 1-2 qisqa, oddiy jumla bilan javob ber.
+Bu ovozli suhbat — qisqa, aniq va do'stona gapir. Ro'yxat yoki sarlavha ishlatma.
+
+Bank ma'lumotlari:
+{context}
+
+Savol: {question}
+
+Qisqa ovozli javob (1-2 jumla):"""
+
+            result = self._llm.invoke(voice_prompt)
+            answer = result.content if hasattr(result, "content") else str(result)
+            answer = answer.strip()
+
+            # TTS uchun 280 belgidan oshmasligi kerak
+            if len(answer) > 280:
+                # Birinchi jumlada to'xtat
+                for sep in [".", "!", "?"]:
+                    idx = answer.find(sep)
+                    if 20 < idx < 280:
+                        answer = answer[: idx + 1]
+                        break
+                else:
+                    answer = answer[:280]
+
+            return answer if answer else "Javob topilmadi. HR bo'limiga murojaat qiling."
+        except Exception as e:
+            logger.error(f"Voice RAG xato: {e}")
+            return "Texnik muammo yuz berdi. Qayta urining."

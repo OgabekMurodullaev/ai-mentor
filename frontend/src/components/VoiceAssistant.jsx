@@ -2,6 +2,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Mic, MicOff, Volume2, Loader2 } from "lucide-react";
 import { sendVoiceChat } from "../api/voice";
+import { convertToWav } from "../utils/audioUtils";
 
 // Brauzer qo'llab-quvvatlaydigan MIME turini aniqlash
 function getSupportedMimeType() {
@@ -45,11 +46,10 @@ export default function VoiceAssistant({ onTranscript, onResponse, voiceType = "
 
       mediaRecorderRef.current.onstop = async () => {
         const actualMime = mimeTypeRef.current || "audio/webm";
-        const ext = actualMime.includes("ogg") ? "ogg"
-                  : actualMime.includes("mp4") ? "mp4"
-                  : "webm";
-        const blob = new Blob(chunksRef.current, { type: actualMime });
+        const rawBlob = new Blob(chunksRef.current, { type: actualMime });
         stream.getTracks().forEach((t) => t.stop());
+        // WebM → WAV (AISHA STT uchun)
+        const { blob, ext } = await convertToWav(rawBlob);
         await handleSend(blob, ext);
       };
 

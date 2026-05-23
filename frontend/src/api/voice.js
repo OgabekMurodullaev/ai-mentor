@@ -1,8 +1,8 @@
 import api from "./axios";
 
-export const sendSTT = (audioBlob) => {
+export const sendSTT = (audioBlob, ext = "wav") => {
   const form = new FormData();
-  form.append("audio", audioBlob, "recording.wav");
+  form.append("audio", audioBlob, `recording.${ext}`);
   return api.post("/voice/stt/", form, {
     headers: { "Content-Type": "multipart/form-data" },
   });
@@ -11,7 +11,7 @@ export const sendSTT = (audioBlob) => {
 export const sendTTS = (text, voiceType = "mentor") =>
   api.post("/voice/tts/", { text, voice_type: voiceType });
 
-export const sendVoiceChat = (audioBlob, voiceType = "mentor", ext = "webm") => {
+export const sendVoiceChat = (audioBlob, voiceType = "mentor", ext = "wav") => {
   const form = new FormData();
   form.append("audio", audioBlob, `recording.${ext}`);
   form.append("voice_type", voiceType);
