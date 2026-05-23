@@ -2,10 +2,11 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LogOut, Bot, Monitor, Trophy, LayoutDashboard,
-  Users, ChevronDown, Sparkles,
+  Users, ChevronDown, Sparkles, FlaskConical,
 } from "lucide-react";
 import { useState } from "react";
 import useAuthStore from "../store/authStore";
+import useDemoStore from "../store/demoStore";
 
 const NAV_ITEMS = [
   { to: "/dashboard",   icon: LayoutDashboard, label: "Dashboard" },
@@ -22,6 +23,7 @@ const ROLE_LABELS = {
 
 export default function Navbar() {
   const { user, logout } = useAuthStore();
+  const { isDemo, toggle: toggleDemo } = useDemoStore();
   const navigate = useNavigate();
   const location = useLocation();
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -100,6 +102,34 @@ export default function Navbar() {
               </Link>
             )}
           </div>
+
+          {/* Demo mode toggle */}
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={toggleDemo}
+            className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition-all duration-200 ${
+              isDemo
+                ? "bg-gold/15 border-gold/40 text-gold hover:bg-gold/25"
+                : "bg-white/8 border-white/20 text-white/50 hover:text-white/80 hover:bg-white/12"
+            }`}
+            title={isDemo ? "Demo rejim yoniq — o'chirish uchun bosing" : "Demo rejimni yoqish"}
+          >
+            <FlaskConical size={12} />
+            <span>Demo</span>
+            {/* Toggle pill */}
+            <div className={`w-7 h-3.5 rounded-full relative transition-colors duration-200 ${
+              isDemo ? "bg-gold" : "bg-white/20"
+            }`}>
+              <motion.div
+                animate={{ x: isDemo ? 14 : 2 }}
+                transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                className="absolute top-0.5 w-2.5 h-2.5 bg-white rounded-full shadow-sm"
+              />
+            </div>
+            <span className={`text-[10px] ${isDemo ? "text-gold" : "text-white/40"}`}>
+              {isDemo ? "Yoniq" : "O'chiq"}
+            </span>
+          </motion.button>
 
           {/* User menu */}
           <div className="relative">

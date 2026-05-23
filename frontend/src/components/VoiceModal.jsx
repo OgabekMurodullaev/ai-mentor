@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Mic, MicOff, Volume2, Loader2, Bot, Sparkles } from "lucide-react";
 import { sendVoiceChat } from "../api/voice";
 import { convertToWav } from "../utils/audioUtils";
-import { DEMO_MODE, DEMO_DELAY_MS } from "../config/demoMode";
+import { DEMO_DELAY_MS } from "../config/demoMode";
+import { isDemoMode } from "../store/demoStore";
 import { getNextVoiceMock, resetVoiceIndex } from "../api/mockData";
 
 // ── Yordamchi funksiyalar ─────────────────────────────────────────────────────
@@ -51,7 +52,7 @@ export default function VoiceModal({ onClose }) {
 
   // Modal ochilganda demo index'ini qayta hisoblaydi
   useEffect(() => {
-    if (DEMO_MODE) resetVoiceIndex();
+    if (isDemoMode()) resetVoiceIndex();
   }, []);
 
   // Yangi xabar kelganda pastga scroll
@@ -71,7 +72,7 @@ export default function VoiceModal({ onClose }) {
     if (status !== "idle") return;
     setError("");
 
-    if (DEMO_MODE) {
+    if (isDemoMode()) {
       // Demo: haqiqiy mikrofon ishlatilmaydi, faqat "recording" effekti ko'rsatiladi
       setStatus("recording");
       return;
@@ -104,7 +105,7 @@ export default function VoiceModal({ onClose }) {
   };
 
   const stopRecording = () => {
-    if (DEMO_MODE) {
+    if (isDemoMode()) {
       processDemoAudio();
       return;
     }
@@ -230,14 +231,14 @@ export default function VoiceModal({ onClose }) {
               <div>
                 <div className="flex items-center gap-2">
                   <p className="font-bold text-white text-sm leading-tight">Zulfiya — Ovozli Suhbat</p>
-                  {DEMO_MODE && (
+                  {isDemoMode() && (
                     <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-gold/20 text-gold border border-gold/30">
                       DEMO
                     </span>
                   )}
                 </div>
                 <p className="text-blue-300/80 text-[11px] mt-0.5">
-                  {DEMO_MODE ? "Demo rejim — oldindan tayyorlangan javoblar" : "1:1 ovozli mentor suhbati"}
+                  {isDemoMode() ? "Demo rejim — oldindan tayyorlangan javoblar" : "1:1 ovozli mentor suhbati"}
                 </p>
               </div>
             </div>

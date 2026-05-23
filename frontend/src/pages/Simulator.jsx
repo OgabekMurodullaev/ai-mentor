@@ -1,8 +1,9 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Monitor, ChevronRight, Play, Trophy,
-  Clock, AlertTriangle, Shield, Coins, RotateCcw,
+  Monitor, Play, Trophy, Clock,
+  AlertTriangle, Shield, Coins, RotateCcw,
+  MessageSquare, Mic,
 } from "lucide-react";
 import { getScenarios, startScenario, finishScenario } from "../api/simulator";
 import DifficultClient from "../components/DifficultClient";
@@ -23,15 +24,17 @@ const TYPE_CONFIG = {
 };
 
 export default function Simulator() {
-  const [scenarios, setScenarios] = useState([]);
+  const [scenarios,     setScenarios]     = useState([]);
   const [activeScenario, setActiveScenario] = useState(null);
-  const [scenarioData, setScenarioData] = useState(null);
-  const [result, setResult] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [startingId, setStartingId] = useState(null);
+  const [scenarioData,   setScenarioData]   = useState(null);
+  const [result,         setResult]         = useState(null);
+  const [loading,        setLoading]        = useState(false);
+  const [startingId,     setStartingId]     = useState(null);
+  // "text" | "voice"
+  const [inputMode,      setInputMode]      = useState("text");
 
   useEffect(() => {
-    getScenarios().then((r) => setScenarios(r.data));
+    getScenarios().then((r) => setScenarios(r.data)).catch(() => {});
   }, []);
 
   const handleStart = async (s) => {
@@ -54,10 +57,10 @@ export default function Simulator() {
     setResult({ score, scenario: activeScenario });
     try {
       await finishScenario({
-        scenario_id: activeScenario.id,
-        total_score: score,
+        scenario_id:        activeScenario.id,
+        total_score:        score,
         time_spent_seconds: timeSpent || 120,
-        mistakes: [],
+        mistakes:           [],
       });
     } catch {/* ignore */}
   };
@@ -68,7 +71,7 @@ export default function Simulator() {
     setResult(null);
   };
 
-  /* RESULT SCREEN */
+  // ── RESULT ──────────────────────────────────────────────────────────────────
   if (result) {
     const pct = Math.round((result.score / result.scenario.max_score) * 100);
     return (
@@ -110,29 +113,58 @@ export default function Simulator() {
     );
   }
 
-  /* ACTIVE SCENARIO */
+  // ── ACTIVE SCENARIO ─────────────────────────────────────────────────────────
   if (activeScenario && scenarioData) {
     return (
       <div className="space-y-4">
+        {/* Breadcrumb + mode toggle */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center gap-3"
+          className="flex items-center justify-between"
         >
-          <button
-            onClick={reset}
-            className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1 transition-colors"
-          >
-            ← Orqaga
-          </button>
-          <div className="h-4 w-px bg-gray-200" />
-          <div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={reset}
+              className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1 transition-colors"
+            >
+              ← Orqaga
+            </button>
+            <div className="h-4 w-px bg-gray-200" />
             <span className={`badge-pill text-[10px] ${DIFFICULTY_CONFIG[activeScenario.difficulty]?.color}`}>
               <span className={`w-1.5 h-1.5 rounded-full ${DIFFICULTY_CONFIG[activeScenario.difficulty]?.dot}`} />
               {DIFFICULTY_CONFIG[activeScenario.difficulty]?.label}
             </span>
+            <h2 className="font-bold text-gray-800 text-sm truncate max-w-[180px]">
+              {activeScenario.title}
+            </h2>
           </div>
-          <h2 className="font-bold text-gray-800 text-sm truncate">{activeScenario.title}</h2>
+
+          {/* Text / Voice mode selector */}
+          <div className="flex items-center bg-gray-100 rounded-xl p-1 gap-1">
+            <button
+              onClick={() => setInputMode("text")}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                inputMode === "text"
+                  ? "bg-white text-primary-700 shadow-sm"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              <MessageSquare size={12} />
+              Matnli
+            </button>
+            <button
+              onClick={() => setInputMode("voice")}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                inputMode === "voice"
+                  ? "bg-white text-primary-700 shadow-sm"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              <Mic size={12} />
+              Ovozli
+            </button>
+          </div>
         </motion.div>
 
         <motion.div
@@ -142,6 +174,7 @@ export default function Simulator() {
         >
           <DifficultClient
             scenario={scenarioData}
+            mode={inputMode}
             onComplete={handleComplete}
           />
         </motion.div>
@@ -149,7 +182,7 @@ export default function Simulator() {
     );
   }
 
-  /* SCENARIOS LIST */
+  // ── SCENARIOS LIST ──────────────────────────────────────────────────────────
   return (
     <div className="space-y-5">
       <motion.div
@@ -168,8 +201,8 @@ export default function Simulator() {
 
       <div className="grid grid-cols-1 gap-4">
         {scenarios.map((s, i) => {
-          const diffCfg = DIFFICULTY_CONFIG[s.difficulty] || {};
-          const typeCfg = TYPE_CONFIG[s.scenario_type] || TYPE_CONFIG.CREDIT;
+          const diffCfg  = DIFFICULTY_CONFIG[s.difficulty]    || {};
+          const typeCfg  = TYPE_CONFIG[s.scenario_type]       || TYPE_CONFIG.CREDIT;
           const TypeIcon = typeCfg.icon;
           const isStarting = startingId === s.id;
 
@@ -180,30 +213,28 @@ export default function Simulator() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.08 }}
             >
-              <div className="card p-5 group hover:-translate-y-0.5 cursor-pointer overflow-hidden relative"
-                onClick={() => !loading && handleStart(s)}>
-                {/* type badge bg */}
-                <div className={`absolute top-0 right-0 w-24 h-24 ${typeCfg.bg} rounded-full opacity-30`}
-                  style={{ transform: "translate(30%, -30%)" }} />
-
+              <div
+                className="card p-5 group hover:-translate-y-0.5 cursor-pointer overflow-hidden relative"
+                onClick={() => !loading && handleStart(s)}
+              >
+                <div
+                  className={`absolute top-0 right-0 w-24 h-24 ${typeCfg.bg} rounded-full opacity-30`}
+                  style={{ transform: "translate(30%, -30%)" }}
+                />
                 <div className="flex items-start gap-4">
                   <div className={`w-12 h-12 ${typeCfg.bg} rounded-2xl flex items-center justify-center shrink-0`}>
                     <TypeIcon size={22} className={typeCfg.color} />
                   </div>
-
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center flex-wrap gap-2 mb-1.5">
                       <span className={`badge-pill ${diffCfg.color} text-[10px]`}>
                         <span className={`w-1.5 h-1.5 rounded-full ${diffCfg.dot}`} />
                         {diffCfg.label}
                       </span>
-                      <span className="text-[10px] text-gray-400 font-medium">
-                        {s.scenario_type}
-                      </span>
+                      <span className="text-[10px] text-gray-400 font-medium">{s.scenario_type}</span>
                     </div>
                     <h3 className="font-bold text-gray-800 text-sm">{s.title}</h3>
                     <p className="text-xs text-gray-500 mt-1 line-clamp-2">{s.description}</p>
-
                     <div className="flex items-center gap-4 mt-3">
                       <div className="flex items-center gap-1 text-xs text-gray-400">
                         <Trophy size={11} />
@@ -213,20 +244,21 @@ export default function Simulator() {
                         <Clock size={11} />
                         <span>~3 daqiqa</span>
                       </div>
+                      {/* Mode indicators */}
+                      <div className="flex items-center gap-1">
+                        <MessageSquare size={10} className="text-gray-300" />
+                        <Mic          size={10} className="text-gray-300" />
+                      </div>
                     </div>
                   </div>
-
                   <motion.div
                     className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-all
-                      ${isStarting
-                        ? "bg-primary-700"
-                        : "bg-primary-50 group-hover:bg-primary-700"
-                      }`}
+                      ${isStarting ? "bg-primary-700" : "bg-primary-50 group-hover:bg-primary-700"}`}
                     whileHover={{ scale: 1.1 }}
                   >
                     {isStarting
                       ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      : <Play size={15} className={`transition-colors group-hover:text-white text-primary-700`} />
+                      : <Play size={15} className="transition-colors group-hover:text-white text-primary-700" />
                     }
                   </motion.div>
                 </div>
@@ -245,4 +277,3 @@ export default function Simulator() {
     </div>
   );
 }
-
