@@ -23,45 +23,15 @@ function getSupportedMimeType() {
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 /**
- * Browser SpeechSynthesis orqali matnni ovozga o'qiydi.
- * Demo rejimda AISHA TTS o'rniga ishlatiladi.
- * uz-UZ → ru-RU → en-US ketma-ketlikda urinadi.
+ * AISHA AI CDN audio URL'ini ijro etadi.
+ * @param {string} url - cdn.aisha.group wav URL
  */
-function speakWithBrowser(text) {
+function playAishaAudio(url) {
   return new Promise((resolve) => {
-    if (!window.speechSynthesis) { resolve(); return; }
-
-    window.speechSynthesis.cancel();
-
-    const trySpeak = () => {
-      const voices = window.speechSynthesis.getVoices();
-      const voice =
-        voices.find((v) => v.lang.startsWith("uz")) ||
-        voices.find((v) => v.lang.startsWith("ru")) ||
-        voices.find((v) => v.lang.startsWith("en")) ||
-        null;
-
-      const utterance = new SpeechSynthesisUtterance(text);
-      if (voice) utterance.voice = voice;
-      utterance.lang  = voice?.lang || "uz-UZ";
-      utterance.rate  = 0.88;
-      utterance.pitch = 1.0;
-      utterance.onend   = resolve;
-      utterance.onerror = () => resolve();
-      window.speechSynthesis.speak(utterance);
-    };
-
-    // Voices ro'yxati async yuklanadi — tayyor bo'lishini kutamiz
-    if (window.speechSynthesis.getVoices().length > 0) {
-      trySpeak();
-    } else {
-      window.speechSynthesis.onvoiceschanged = () => {
-        window.speechSynthesis.onvoiceschanged = null;
-        trySpeak();
-      };
-      // 300ms ichida yuklansa ham boshlaydi
-      setTimeout(trySpeak, 300);
-    }
+    const audio = new Audio(url);
+    audio.onended  = resolve;
+    audio.onerror  = resolve;
+    audio.play().catch(resolve);
   });
 }
 
@@ -152,18 +122,16 @@ export default function VoiceModal({ onClose }) {
 
     const mock = getNextVoiceMock();
 
-    setMessages((prev) => [
-      ...prev,
-      { role: "user", text: mock.user_text },
-    ]);
+    // Avval foydalanuvchi "nutqi" ko'rinadi
+    setMessages((prev) => [...prev, { role: "user", text: mock.user_text }]);
 
     // Biroz kutib bot javobini ko'rsatamiz (tabiiy ko'rinish)
-    await sleep(300);
+    await sleep(350);
     setMessages((prev) => [...prev, { role: "bot", text: mock.bot_response }]);
 
-    // Browser SpeechSynthesis bilan o'qiydi
+    // AISHA AI "Gulnoza" ovozi bilan ijro etiladi
     setStatus("playing");
-    await speakWithBrowser(mock.bot_response);
+    await playAishaAudio(mock.audio_url);
     setStatus("idle");
   };
 

@@ -60,36 +60,37 @@ export const TEXT_RESPONSES = [
 
 // ── Ovozli chat ─────────────────────────────────────────────────────────────
 // Ketma-ket ko'rsatiladi: 1-gapirishda 1-javob, 2-gapirishda 2-javob va h.k.
+// audio_url — AISHA AI "Gulnoza" ovozi bilan oldindan generatsiya qilingan
 export const VOICE_RESPONSES = [
   {
-    user_text: "Turonbankda ish vaqti qanday?",
-    bot_response:
-      "Ish vaqti Dushanba-Juma 09:00-18:00, Shanba esa 09:00-13:00 gacha. Tushlik tanaffusi 13:00-14:00.",
+    user_text:    "Turonbankda ish vaqti qanday?",
+    bot_response: "Ish vaqti Dushanba-Juma 09:00-18:00, Shanba esa 09:00-13:00 gacha. Tushlik tanaffusi 13:00-14:00.",
+    audio_url:    "https://cdn.aisha.group/backend/tts_audios/286047d7-3dea-48e8-aa92-fc94b82a968a.wav",
   },
   {
-    user_text: "Kredit olish uchun qanday hujjatlar kerak?",
-    bot_response:
-      "Kredit uchun pasport, JSHSHIR va 6 oylik daromad ma'lumotnomasi kerak. Kredit qo'mitasi 3 ish kunida qaror qabul qiladi.",
+    user_text:    "Kredit olish uchun qanday hujjatlar kerak?",
+    bot_response: "Kredit uchun pasport, JSHSHIR va 6 oylik daromad ma'lumotnomasi kerak. Kredit qo'mitasi 3 ish kunida qaror qabul qiladi.",
+    audio_url:    "https://cdn.aisha.group/backend/tts_audios/3dd1f6e5-fb4d-4f9f-a8a3-51f4d257ddf5.wav",
   },
   {
-    user_text: "Depozit foizlari qancha?",
-    bot_response:
-      "Eng foydali depozit Istiqbol — yillik 22 foiz, 24 oyga. Minimal summa 500 ming so'm.",
+    user_text:    "Depozit foizlari qancha?",
+    bot_response: "Eng foydali depozit Istiqbol — yillik 22 foiz, 24 oyga. Minimal summa 500 ming so'm.",
+    audio_url:    "https://cdn.aisha.group/backend/tts_audios/daeee721-3a7c-483c-8193-f67c5491ef63.wav",
   },
   {
-    user_text: "Dress-code talablari qanday?",
-    bot_response:
-      "Erkaklar uchun klassik kostyum va galstuk majburiy. Sport kiyim va jinsi shim mutlaqo taqiqlanadi.",
+    user_text:    "Dress-code talablari qanday?",
+    bot_response: "Erkaklar uchun klassik kostyum va galstuk majburiy. Sport kiyim va jinsi shim mutlaqo taqiqlanadi.",
+    audio_url:    "https://cdn.aisha.group/backend/tts_audios/7ec0cd6a-30a9-41cc-9a94-ee424fb0dd68.wav",
   },
   {
-    user_text: "Ta'til necha kun beriladi?",
-    bot_response:
-      "Asosiy ta'til yiliga 24 ish kuni. 3 yildan ortiq ishlaganlarga yana 3 kun qo'shimcha beriladi.",
+    user_text:    "Ta'til necha kun beriladi?",
+    bot_response: "Asosiy ta'til yiliga 24 ish kuni. 3 yildan ortiq ishlaganlarga yana 3 kun qo'shimcha beriladi.",
+    audio_url:    "https://cdn.aisha.group/backend/tts_audios/61f84c61-a249-41fc-9b82-daf3abc96260.wav",
   },
   {
-    user_text: "Ish haqi qachon to'lanadi?",
-    bot_response:
-      "Asosiy ish haqi har oyning 5-sanasida. Avans esa 20-sanasida, ish haqining 40 foizi miqdorida.",
+    user_text:    "Ish haqi qachon to'lanadi?",
+    bot_response: "Asosiy ish haqi har oyning 5-sanasida. Avans esa 20-sanasida, ish haqining 40 foizi miqdorida.",
+    audio_url:    "https://cdn.aisha.group/backend/tts_audios/d3493552-0e22-4c40-bdc0-a642d7739c9f.wav",
   },
 ];
 
