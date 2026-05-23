@@ -1,0 +1,142 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background-color: #f1f5fb;
+    background-image:
+      radial-gradient(ellipse 80% 60% at 20% -10%, rgba(59,130,246,0.07) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 50% at 80% 100%, rgba(29,78,216,0.05) 0%, transparent 50%);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    color: #0f172a;
+  }
+
+  :root {
+    --primary:   #1d4ed8;
+    --navy:      #1a3c6e;
+    --gold:      #f59e0b;
+    --surface:   #ffffff;
+    --muted:     #64748b;
+    --border:    rgba(15,23,42,0.07);
+  }
+
+  h1,h2,h3,h4 { letter-spacing: -0.02em; }
+}
+
+@layer components {
+
+  /* ── Cards ─────────────────────────────── */
+  .card {
+    @apply bg-white rounded-2xl border border-slate-100 shadow-card
+           transition-all duration-300;
+  }
+  .card:hover { @apply shadow-card-hover; }
+
+  .card-glass {
+    background: rgba(255,255,255,0.75);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    @apply border border-white/60 rounded-2xl shadow-card;
+  }
+
+  .card-dark {
+    @apply rounded-2xl border border-white/10 shadow-card;
+    background: rgba(17,40,73,0.9);
+    backdrop-filter: blur(12px);
+  }
+
+  /* ── Buttons ────────────────────────────── */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2
+           bg-primary-700 text-white font-semibold px-5 py-2.5 rounded-xl
+           hover:bg-primary-600 active:scale-95 transition-all duration-200
+           shadow-sm hover:shadow-glow-blue
+           disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2
+           text-primary-700 font-medium px-4 py-2 rounded-xl
+           hover:bg-primary-50 active:scale-95 transition-all duration-200;
+  }
+
+  .btn-gold {
+    @apply inline-flex items-center justify-center gap-2
+           bg-gradient-gold text-white font-bold px-5 py-2.5 rounded-xl
+           hover:brightness-105 active:scale-95 transition-all duration-200
+           shadow-sm hover:shadow-glow-gold;
+  }
+
+  /* ── Form ───────────────────────────────── */
+  .input-field {
+    @apply w-full border border-slate-200 rounded-xl px-4 py-3 text-sm
+           focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500
+           bg-white transition-all duration-200 placeholder:text-slate-400
+           shadow-xs;
+  }
+
+  /* ── Badges ─────────────────────────────── */
+  .badge-pill {
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold;
+  }
+
+  .badge-gold   { @apply badge-pill bg-gold-pale text-gold-dark border border-gold-light/60; }
+  .badge-blue   { @apply badge-pill bg-primary-50 text-primary-700 border border-primary-200/60; }
+  .badge-green  { @apply badge-pill bg-emerald-50 text-emerald-700 border border-emerald-200/60; }
+  .badge-violet { @apply badge-pill bg-violet-50 text-violet-700 border border-violet-200/60; }
+
+  /* ── Stat card ──────────────────────────── */
+  .stat-card { @apply card p-5 flex items-start gap-4; }
+
+  /* ── Rank decorations ───────────────────── */
+  .rank-gold   { @apply bg-gradient-gold shadow-glow-gold; }
+  .rank-silver { @apply bg-gradient-silver shadow-glow-silver; }
+  .rank-bronze { @apply bg-gradient-bronze shadow-glow-bronze; }
+}
+
+@layer utilities {
+  .text-gradient {
+    @apply bg-gradient-to-r from-primary-700 to-primary-400 bg-clip-text text-transparent;
+  }
+  .text-gradient-gold {
+    @apply bg-gradient-to-r from-gold-dark via-gold to-gold-light bg-clip-text text-transparent;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+  .bg-dots {
+    background-image: radial-gradient(circle, rgba(255,255,255,0.14) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+  .bg-dots-dark {
+    background-image: radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+}
+
+/* ── Scrollbar ────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+/* ── Wave animation (voice) ──────────────── */
+@keyframes wave {
+  0%, 100% { height: 6px; }
+  50%       { height: 22px; }
+}
+.wave-bar { animation: wave 0.8s ease-in-out infinite; }
+.wave-bar:nth-child(1) { animation-delay: 0s; }
+.wave-bar:nth-child(2) { animation-delay: 0.1s; }
+.wave-bar:nth-child(3) { animation-delay: 0.2s; }
+.wave-bar:nth-child(4) { animation-delay: 0.1s; }
+.wave-bar:nth-child(5) { animation-delay: 0s; }
