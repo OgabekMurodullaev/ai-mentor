@@ -28,36 +28,77 @@ export default function DifficultClient({ scenario, mode = "text", onComplete })
   const [lastFeedback, setLastFeedback]   = useState(null);
   const [finished, setFinished]           = useState(false);
   const [startTime]                       = useState(Date.now());
+  // separate key so animation triggers on text change even within same step
+  const [msgKey, setMsgKey]               = useState(0);
 
   // Voice recording state
   const [recStatus, setRecStatus] = useState("idle"); // idle|recording|processing
 
-  const inputRef         = useRef(null);
-  const clientAudioRef   = useRef(null);
-  const mediaRecorderRef = useRef(null);
-  const chunksRef        = useRef([]);
+  const inputRef          = useRef(null);
+  const clientAudioRef    = useRef(null);   // currently playing Audio object
+  const currentAudioUrl   = useRef(scenario.audio_url || null); // URL of current client message audio
+  const mediaRecorderRef  = useRef(null);
+  const chunksRef         = useRef([]);
 
   const totalScore  = stepScores.reduce((a, b) => a + b, 0);
   const currentStep = scenario.steps?.[step];
   const pct         = scenario.steps?.length ? (step / scenario.steps.length) * 100 : 0;
 
-  // ── Auto-play initial client audio (only if URL provided) ──────────────────
-  useEffect(() => {
-    if (scenario.audio_url) {
-      const audio = new Audio(scenario.audio_url);
-      audio.play().catch(() => {});
-      clientAudioRef.current = audio;
+  // ── Stop any currently playing client audio ────────────────────────────────
+  const stopAudio = () => {
+    if (clientAudioRef.current) {
+      clientAudioRef.current.onended = null;  // cancel any chained handler
+      clientAudioRef.current.pause();
+      clientAudioRef.current = null;
     }
-    // NOTE: NO automatic TTS call — user can click Volume2 button manually
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  };
 
-  // ── Play client audio manually ─────────────────────────────────────────────
+  // ── Play client audio (stop previous first, then play after brief delay) ───
   const playClientAudio = (url) => {
     if (!url) return;
-    if (clientAudioRef.current) clientAudioRef.current.pause();
-    clientAudioRef.current = new Audio(url);
-    clientAudioRef.current.play().catch(() => {});
+    stopAudio();
+    currentAudioUrl.current = url;
+    // Small timeout so React DOM has painted new text before audio starts
+    setTimeout(() => {
+      const audio = new Audio(url);
+      audio.play().catch(() => {});
+      clientAudioRef.current = audio;
+    }, 80);
   };
+
+  // ── Auto-play initial audio; chain to steps[0] message after it ends ───────
+  useEffect(() => {
+    const s0 = scenario.steps?.[0];
+
+    if (scenario.audio_url) {
+      const audio = new Audio(scenario.audio_url);
+      clientAudioRef.current = audio;
+
+      // After the opening audio ends, show steps[0].client_message (first specific question)
+      audio.onended = () => {
+        if (s0?.client_message) {
+          setClientText(s0.client_message);
+          setMsgKey((k) => k + 1);
+          currentAudioUrl.current = s0.audio_url || null;
+          if (s0.audio_url) {
+            setTimeout(() => {
+              // Only play if not superseded by an employee answer
+              if (!clientAudioRef.current || clientAudioRef.current === audio) {
+                const next = new Audio(s0.audio_url);
+                next.play().catch(() => {});
+                clientAudioRef.current = next;
+              }
+            }, 150);
+          }
+        }
+      };
+
+      audio.play().catch(() => {});
+    }
+
+    // Cleanup on unmount
+    return () => stopAudio();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Evaluate employee answer ───────────────────────────────────────────────
   const evaluate = (answer) => {
@@ -107,12 +148,19 @@ export default function DifficultClient({ scenario, mode = "text", onComplete })
         newAudioUrl   = res.data.audio_url || null;
       }
 
+      // Update text & animation key first — audio will play 80ms later inside playClientAudio
       setClientText(newClientText);
-      if (newAudioUrl) playClientAudio(newAudioUrl);
+      setMsgKey((k) => k + 1);
       setStep(nextStep);
       setEmployeeInput("");
+      currentAudioUrl.current = newAudioUrl;
+
+      if (newAudioUrl) playClientAudio(newAudioUrl);
+
     } catch {
-      setClientText(scenario.steps[nextStep]?.client_message || "Davom eting.");
+      const fallback = scenario.steps[nextStep]?.client_message || "Davom eting.";
+      setClientText(fallback);
+      setMsgKey((k) => k + 1);
       setStep(nextStep);
     } finally {
       setLoading(false);
@@ -126,6 +174,7 @@ export default function DifficultClient({ scenario, mode = "text", onComplete })
   // ── TEXT mode: send ────────────────────────────────────────────────────────
   const handleTextSend = async () => {
     if (!employeeInput.trim() || loading || !currentStep) return;
+    stopAudio();          // stop client audio the moment employee answers
     setLoading(true);
     const { newHistory, nextStep } = evaluate(employeeInput);
     await advanceStep(newHistory, nextStep);
@@ -134,6 +183,7 @@ export default function DifficultClient({ scenario, mode = "text", onComplete })
   // ── VOICE mode: recording ──────────────────────────────────────────────────
   const startVoiceRecording = async () => {
     if (recStatus !== "idle" || loading) return;
+    stopAudio();          // stop client audio when employee starts speaking
 
     if (isDemoMode()) {
       setRecStatus("recording");
@@ -271,10 +321,10 @@ export default function DifficultClient({ scenario, mode = "text", onComplete })
         </span>
       </div>
 
-      {/* Client message */}
+      {/* Client message — key=msgKey so animation re-triggers on every text change */}
       <AnimatePresence mode="wait">
         <motion.div
-          key={step}
+          key={msgKey}
           initial={{ x: -20, opacity: 0 }}
           animate={{ x:   0, opacity: 1 }}
           exit={{   x:  20, opacity: 0 }}
@@ -287,10 +337,10 @@ export default function DifficultClient({ scenario, mode = "text", onComplete })
             <div className="flex-1">
               <div className="flex items-center justify-between mb-1">
                 <span className="text-xs font-semibold text-orange-700">Mijoz</span>
-                {/* Manual audio replay — no auto-TTS */}
-                {(step === 0 ? scenario.audio_url : scenario.steps?.[step]?.audio_url) && (
+                {/* Volume2: replays current message audio */}
+                {currentAudioUrl.current && (
                   <button
-                    onClick={() => playClientAudio(step === 0 ? scenario.audio_url : scenario.steps[step].audio_url)}
+                    onClick={() => playClientAudio(currentAudioUrl.current)}
                     className="text-orange-400 hover:text-orange-600 transition-colors"
                     title="Ovozni eshiting"
                   >
