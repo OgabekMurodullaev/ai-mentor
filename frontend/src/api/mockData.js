@@ -121,7 +121,7 @@ export const SIMULATOR_SCENARIOS = [
     difficulty:    "EASY",
     max_score:     50,
     initial_message: "Salom, men biznes uchun kredit olmoqchiman. Qanday qilsam bo'ladi?",
-    audio_url: "https://cdn.aisha.group/backend/tts_audios/d609d6c4-2408-4f84-ae7f-06d37bd0b888.wav",
+    audio_url: "/audios/sc_1_1.wav",
     steps: [
       {
         client_message: "50 million so'm kerak. Qancha foizda berasiz va qanday muddatga?",
@@ -129,7 +129,7 @@ export const SIMULATOR_SCENARIOS = [
         correct_keywords: ["biznes", "kredit", "24", "28", "foiz", "oy", "muddati"],
         score: 10,
         demo_voice_answer: "Biznes kredit uchun yillik foiz 24 dan 28 foizgacha. Muddat 3 oydan 84 oygacha tanlashingiz mumkin.",
-        audio_url: "https://cdn.aisha.group/backend/tts_audios/16890382-5ce4-40d8-8789-1b09642ecd58.wav",
+        audio_url: "/audios/sc_1_2.wav",
       },
       {
         client_message: "Kredit tarixi tekshiriladimi? Menda avval kichik muammo bo'lgan edi...",
@@ -137,7 +137,7 @@ export const SIMULATOR_SCENARIOS = [
         correct_keywords: ["kredit tarixi", "nbki", "byuro", "tekshiriladi", "salbiy"],
         score: 10,
         demo_voice_answer: "Ha, kredit tarixi NBKI kredit byurosi orqali tekshiriladi. Agar salbiy tarix bo'lsa kredit berilmasligi mumkin.",
-        audio_url: "https://cdn.aisha.group/backend/tts_audios/fe767e68-85da-4930-967b-2fc93e278a8f.wav",
+        audio_url: "/audios/sc_1_3.wav",
       },
       {
         client_message: "Qanday hujjatlar kerak? To'liq ro'yxatini bering.",
@@ -145,7 +145,7 @@ export const SIMULATOR_SCENARIOS = [
         correct_keywords: ["pasport", "jshshir", "daromad", "garov", "hujjat"],
         score: 15,
         demo_voice_answer: "Pasport, JSHSHIR, so'nggi 6 oylik daromad ma'lumotnomasi va garov hujjatlari kerak bo'ladi.",
-        audio_url: "https://cdn.aisha.group/backend/tts_audios/6d13f373-36a8-4fcf-ac61-b15d266440c7.wav",
+        audio_url: "/audios/sc_1_4.wav",
       },
       {
         client_message: "Qaror qachon chiqadi? Ko'p kutishim kerakmi?",
@@ -153,7 +153,7 @@ export const SIMULATOR_SCENARIOS = [
         correct_keywords: ["3 ish kuni", "qo'mita", "qaror", "kun", "muddati"],
         score: 15,
         demo_voice_answer: "Kredit qo'mitasi 3 ish kuni ichida qaror qabul qiladi. Katta kreditlar uchun Bosh ofis ham tasdiqlaydi.",
-        audio_url: "https://cdn.aisha.group/backend/tts_audios/97114735-986d-47f6-9b57-d9d1d9d87d2a.wav",
+        audio_url: "/audios/sc_1_5.wav",
       },
     ],
   },
@@ -166,7 +166,7 @@ export const SIMULATOR_SCENARIOS = [
     difficulty:    "MEDIUM",
     max_score:     60,
     initial_message: "Uch kundan beri kartamdan pul ololmayapman! Bu nima degani, tushuntiring!",
-    audio_url: "https://cdn.aisha.group/backend/tts_audios/36cbc317-eee7-48de-ad58-8bc92bfc4839.wav",
+    audio_url: "/audios/sc_2_1.wav",
     steps: [
       {
         client_message: "Kecha ATMdan pul olmoqchi bo'ldim, 'karta bloklangan' dedi!",
@@ -174,7 +174,7 @@ export const SIMULATOR_SCENARIOS = [
         correct_keywords: ["uzr", "noqulaylik", "tekshiramiz", "sabab", "aniqlaymiz", "yordam"],
         score: 15,
         demo_voice_answer: "Uzr, bu noqulaylik uchun. Darhol tekshirib, sababini aniqlaymiz. Pasportingizni ko'rsata olasizmi?",
-        audio_url: "https://cdn.aisha.group/backend/tts_audios/ada5509a-5d9f-4f66-96de-1c9d8e10fac5.wav",
+        audio_url: "/audios/sc_2_2.wav",
       },
       {
         client_message: "Kunlik limitni oshdimmi? Buni bilmasam bo'lmaydi-ku!",
@@ -182,7 +182,7 @@ export const SIMULATOR_SCENARIOS = [
         correct_keywords: ["limit", "50 million", "internet banking", "mobil", "ko'rish", "nazorat"],
         score: 15,
         demo_voice_answer: "Kunlik limit 50 million so'm. Internet banking yoki mobil ilovada limitni real vaqtda kuzatib borishingiz mumkin.",
-        audio_url: "https://cdn.aisha.group/backend/tts_audios/15e9e98f-b1eb-429c-9330-2a7a27f96f9b.wav",
+        audio_url: "/audios/sc_2_3.wav",
       },
       {
         client_message: "Endi nima qilaman, kartam qachon ochilar?",
@@ -190,7 +190,7 @@ export const SIMULATOR_SCENARIOS = [
         correct_keywords: ["200-00-00", "qo'ng'iroq", "filial", "mobil ilova", "blok", "ochish"],
         score: 15,
         demo_voice_answer: "Kartani ochish uchun +998 71 200-00-00 ga qo'ng'iroq qiling yoki mobil ilovada blokdan chiqaring. Bu 5 daqiqa oladi.",
-        audio_url: "https://cdn.aisha.group/backend/tts_audios/1d1f5e00-184c-41ce-ab0c-59c97fba8c37.wav",
+        audio_url: "/audios/sc_2_4.mp3",
       },
       {
         client_message: "Keyingi safar bunday bo'lmasligi uchun nima qilishim kerak?",
@@ -198,7 +198,7 @@ export const SIMULATOR_SCENARIOS = [
         correct_keywords: ["sms", "xabarnoma", "limit", "nazorat", "internet banking", "tavsiya"],
         score: 15,
         demo_voice_answer: "SMS xabarnomani ulang — har bir operatsiyadan habar olasiz. Internet bankingda limitni ham kuzatib boring.",
-        audio_url: "https://cdn.aisha.group/backend/tts_audios/fd660396-ebbd-401e-b7f7-18196e4c28f0.wav",
+        audio_url: "/audios/sc_2_5.wav",
       },
     ],
   },

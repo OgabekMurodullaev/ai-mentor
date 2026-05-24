@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Send, Volume2, CheckCircle, XCircle, AlertCircle,
-  Mic, MicOff, Loader2,
+  Mic, MicOff, Loader2, Flag,
 } from "lucide-react";
 import { getDifficultClientResponse } from "../api/simulator";
 import { sendVoiceChat } from "../api/voice";
@@ -19,6 +19,12 @@ function getSupportedMimeType() {
 }
 
 export default function DifficultClient({ scenario, mode = "text", onComplete }) {
+  // Chat log: [{type:'client'|'employee', text, audioUrl?}]
+  const [chatLog, setChatLog] = useState(
+    scenario.initial_message
+      ? [{ type: "client", text: scenario.initial_message, audioUrl: scenario.audio_url || null }]
+      : []
+  );
   const [clientText, setClientText]       = useState(scenario.initial_message || "");
   const [employeeInput, setEmployeeInput] = useState("");
   const [history, setHistory]             = useState([]);
@@ -26,39 +32,39 @@ export default function DifficultClient({ scenario, mode = "text", onComplete })
   const [stepScores, setStepScores]       = useState([]);
   const [loading, setLoading]             = useState(false);
   const [lastFeedback, setLastFeedback]   = useState(null);
-  const [finished, setFinished]           = useState(false);
+  const [pendingFinish, setPendingFinish] = useState(false);
   const [startTime]                       = useState(Date.now());
-  // separate key so animation triggers on text change even within same step
-  const [msgKey, setMsgKey]               = useState(0);
+  const [recStatus, setRecStatus]         = useState("idle");
 
-  // Voice recording state
-  const [recStatus, setRecStatus] = useState("idle"); // idle|recording|processing
-
-  const inputRef          = useRef(null);
-  const clientAudioRef    = useRef(null);   // currently playing Audio object
-  const currentAudioUrl   = useRef(scenario.audio_url || null); // URL of current client message audio
-  const mediaRecorderRef  = useRef(null);
-  const chunksRef         = useRef([]);
+  const inputRef         = useRef(null);
+  const chatEndRef       = useRef(null);
+  const clientAudioRef   = useRef(null);
+  const currentAudioUrl  = useRef(scenario.audio_url || null);
+  const mediaRecorderRef = useRef(null);
+  const chunksRef        = useRef([]);
 
   const totalScore  = stepScores.reduce((a, b) => a + b, 0);
   const currentStep = scenario.steps?.[step];
   const pct         = scenario.steps?.length ? (step / scenario.steps.length) * 100 : 0;
 
-  // ── Stop any currently playing client audio ────────────────────────────────
+  // Auto-scroll to bottom on new message
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chatLog, loading]);
+
+  // ── Audio helpers ────────────────────────────────────────
   const stopAudio = () => {
     if (clientAudioRef.current) {
-      clientAudioRef.current.onended = null;  // cancel any chained handler
+      clientAudioRef.current.onended = null;
       clientAudioRef.current.pause();
       clientAudioRef.current = null;
     }
   };
 
-  // ── Play client audio (stop previous first, then play after brief delay) ───
   const playClientAudio = (url) => {
     if (!url) return;
     stopAudio();
     currentAudioUrl.current = url;
-    // Small timeout so React DOM has painted new text before audio starts
     setTimeout(() => {
       const audio = new Audio(url);
       audio.play().catch(() => {});
@@ -66,23 +72,22 @@ export default function DifficultClient({ scenario, mode = "text", onComplete })
     }, 80);
   };
 
-  // ── Auto-play initial audio; chain to steps[0] message after it ends ───────
+  // ── Auto-play initial audio; chain steps[0] after it ends ─
   useEffect(() => {
     const s0 = scenario.steps?.[0];
-
     if (scenario.audio_url) {
       const audio = new Audio(scenario.audio_url);
       clientAudioRef.current = audio;
-
-      // After the opening audio ends, show steps[0].client_message (first specific question)
       audio.onended = () => {
         if (s0?.client_message) {
           setClientText(s0.client_message);
-          setMsgKey((k) => k + 1);
           currentAudioUrl.current = s0.audio_url || null;
+          setChatLog((prev) => [
+            ...prev,
+            { type: "client", text: s0.client_message, audioUrl: s0.audio_url || null },
+          ]);
           if (s0.audio_url) {
             setTimeout(() => {
-              // Only play if not superseded by an employee answer
               if (!clientAudioRef.current || clientAudioRef.current === audio) {
                 const next = new Audio(s0.audio_url);
                 next.play().catch(() => {});
@@ -92,19 +97,16 @@ export default function DifficultClient({ scenario, mode = "text", onComplete })
           }
         }
       };
-
       audio.play().catch(() => {});
     }
-
-    // Cleanup on unmount
     return () => stopAudio();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []); // eslint-disable-line
 
-  // ── Evaluate employee answer ───────────────────────────────────────────────
+  // ── Evaluate employee answer ──────────────────────────────
   const evaluate = (answer) => {
     if (!currentStep) return;
-    const keywords = currentStep.correct_keywords || [];
-    const matched  = keywords.filter((kw) => answer.toLowerCase().includes(kw.toLowerCase()));
+    const keywords  = currentStep.correct_keywords || [];
+    const matched   = keywords.filter((kw) => answer.toLowerCase().includes(kw.toLowerCase()));
     const isCorrect = matched.length > 0;
     const earned    = isCorrect ? currentStep.score : Math.floor(currentStep.score * 0.3);
 
@@ -117,16 +119,21 @@ export default function DifficultClient({ scenario, mode = "text", onComplete })
         : `Maslahat: ${keywords.slice(0, 3).join(", ")} kabi so'zlardan foydalaning`,
     });
 
+    // Add employee bubble to chat
+    setChatLog((prev) => [...prev, { type: "employee", text: answer }]);
+
     const newHistory = [...history, { employee: answer, client: clientText }];
     setHistory(newHistory);
     return { newHistory, nextStep: step + 1 };
   };
 
-  // ── Advance to next step ───────────────────────────────────────────────────
+  // ── Advance to next step ──────────────────────────────────
   const advanceStep = async (newHistory, nextStep) => {
     if (nextStep >= scenario.steps.length) {
-      setFinished(true);
+      // All steps done — show Yakunlash button instead of auto-finishing
+      setPendingFinish(true);
       setLoading(false);
+      setTimeout(() => setLastFeedback(null), 2500);
       return;
     }
 
@@ -139,7 +146,7 @@ export default function DifficultClient({ scenario, mode = "text", onComplete })
         newClientText = scenario.steps[nextStep].client_message;
         newAudioUrl   = scenario.steps[nextStep].audio_url || null;
       } else {
-        const res     = await getDifficultClientResponse({
+        const res = await getDifficultClientResponse({
           scenario_id:      scenario.scenario_id || scenario.id,
           employee_message: newHistory[newHistory.length - 1]?.employee || "",
           history:          newHistory,
@@ -148,20 +155,23 @@ export default function DifficultClient({ scenario, mode = "text", onComplete })
         newAudioUrl   = res.data.audio_url || null;
       }
 
-      // Update text & animation key first — audio will play 80ms later inside playClientAudio
       setClientText(newClientText);
-      setMsgKey((k) => k + 1);
       setStep(nextStep);
       setEmployeeInput("");
       currentAudioUrl.current = newAudioUrl;
 
-      if (newAudioUrl) playClientAudio(newAudioUrl);
+      // Add client bubble to chat
+      setChatLog((prev) => [
+        ...prev,
+        { type: "client", text: newClientText, audioUrl: newAudioUrl },
+      ]);
 
+      if (newAudioUrl) playClientAudio(newAudioUrl);
     } catch {
       const fallback = scenario.steps[nextStep]?.client_message || "Davom eting.";
       setClientText(fallback);
-      setMsgKey((k) => k + 1);
       setStep(nextStep);
+      setChatLog((prev) => [...prev, { type: "client", text: fallback, audioUrl: null }]);
     } finally {
       setLoading(false);
       setTimeout(() => {
@@ -171,32 +181,26 @@ export default function DifficultClient({ scenario, mode = "text", onComplete })
     }
   };
 
-  // ── TEXT mode: send ────────────────────────────────────────────────────────
+  // ── TEXT send ─────────────────────────────────────────────
   const handleTextSend = async () => {
-    if (!employeeInput.trim() || loading || !currentStep) return;
-    stopAudio();          // stop client audio the moment employee answers
+    if (!employeeInput.trim() || loading || !currentStep || pendingFinish) return;
+    stopAudio();
     setLoading(true);
     const { newHistory, nextStep } = evaluate(employeeInput);
     await advanceStep(newHistory, nextStep);
   };
 
-  // ── VOICE mode: recording ──────────────────────────────────────────────────
+  // ── VOICE ─────────────────────────────────────────────────
   const startVoiceRecording = async () => {
-    if (recStatus !== "idle" || loading) return;
-    stopAudio();          // stop client audio when employee starts speaking
-
-    if (isDemoMode()) {
-      setRecStatus("recording");
-      return;
-    }
-
+    if (recStatus !== "idle" || loading || pendingFinish) return;
+    stopAudio();
+    if (isDemoMode()) { setRecStatus("recording"); return; }
     try {
       const stream   = await navigator.mediaDevices.getUserMedia({ audio: true });
       const mimeType = getSupportedMimeType();
       const options  = mimeType ? { mimeType } : {};
       mediaRecorderRef.current = new MediaRecorder(stream, options);
       chunksRef.current = [];
-
       mediaRecorderRef.current.ondataavailable = (e) => {
         if (e.data.size > 0) chunksRef.current.push(e.data);
       };
@@ -208,35 +212,25 @@ export default function DifficultClient({ scenario, mode = "text", onComplete })
       };
       mediaRecorderRef.current.start();
       setRecStatus("recording");
-    } catch {
-      setRecStatus("idle");
-    }
+    } catch { setRecStatus("idle"); }
   };
 
   const stopVoiceRecording = () => {
-    if (isDemoMode()) {
-      processVoiceDemoAnswer();
-      return;
-    }
-    if (mediaRecorderRef.current?.state === "recording") {
-      mediaRecorderRef.current.stop();
-    }
+    if (isDemoMode()) { processVoiceDemoAnswer(); return; }
+    if (mediaRecorderRef.current?.state === "recording") mediaRecorderRef.current.stop();
     setRecStatus("processing");
   };
 
-  // Demo: pre-defined correct answer
   const processVoiceDemoAnswer = async () => {
     setRecStatus("processing");
     setLoading(true);
     await sleep(1100);
-
     const demoAnswer = currentStep?.demo_voice_answer || currentStep?.correct_keywords?.join(", ") || "Tushundim";
     const { newHistory, nextStep } = evaluate(demoAnswer);
     setRecStatus("idle");
     await advanceStep(newHistory, nextStep);
   };
 
-  // Real: STT → evaluate
   const processVoiceAnswer = async (rawBlob) => {
     setRecStatus("processing");
     setLoading(true);
@@ -247,193 +241,178 @@ export default function DifficultClient({ scenario, mode = "text", onComplete })
       if (transcript) {
         const { newHistory, nextStep } = evaluate(transcript);
         await advanceStep(newHistory, nextStep);
-      } else {
-        setLoading(false);
-      }
-    } catch {
-      setLoading(false);
-    } finally {
-      setRecStatus("idle");
-    }
+      } else { setLoading(false); }
+    } catch { setLoading(false); }
+    finally { setRecStatus("idle"); }
+  };
+
+  const handleFinish = () => {
+    const elapsed = Math.floor((Date.now() - startTime) / 1000);
+    onComplete(totalScore, elapsed);
   };
 
   const isBusy = loading || recStatus !== "idle";
 
-  // ── FINISHED screen ────────────────────────────────────────────────────────
-  if (finished) {
-    const elapsed  = Math.floor((Date.now() - startTime) / 1000);
-    const pctScore = Math.round((totalScore / scenario.max_score) * 100);
-    const grade    =
-      pctScore >= 90 ? { label: "A'lo",      color: "text-emerald-600", bg: "bg-emerald-50", icon: "🏆" } :
-      pctScore >= 70 ? { label: "Yaxshi",    color: "text-blue-600",    bg: "bg-blue-50",    icon: "🎯" } :
-                       { label: "Qoniqarli", color: "text-amber-600",   bg: "bg-amber-50",   icon: "📈" };
-
-    return (
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="text-center py-8 space-y-5"
-      >
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ type: "spring", stiffness: 200, delay: 0.1 }}
-          className="text-7xl"
-        >
-          {grade.icon}
-        </motion.div>
-        <div>
-          <h3 className="text-2xl font-bold text-gray-800">Stsenariy yakunlandi!</h3>
-          <p className="text-gray-500 mt-1">Siz muvaffaqiyatli o'tdingiz</p>
-        </div>
-        <div className={`inline-flex items-center gap-2 px-5 py-3 rounded-2xl ${grade.bg}`}>
-          <span className={`text-3xl font-bold ${grade.color}`}>{totalScore}</span>
-          <span className="text-gray-400 text-lg font-light">/</span>
-          <span className="text-gray-500 font-medium">{scenario.max_score}</span>
-          <span className={`ml-2 font-bold ${grade.color}`}>{grade.label}</span>
-        </div>
-        <div className="max-w-xs mx-auto">
-          <ProgressBar value={pctScore} height="h-3" showLabel />
-        </div>
-        <p className="text-sm text-gray-400">
-          ⏱ Vaqt: {Math.floor(elapsed / 60)}:{String(elapsed % 60).padStart(2, "0")}
-        </p>
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.97 }}
-          onClick={() => onComplete(totalScore, elapsed)}
-          className="btn-primary px-8 py-3 text-base"
-        >
-          Natijani saqlash
-        </motion.button>
-      </motion.div>
-    );
-  }
-
-  // ── MAIN render ────────────────────────────────────────────────────────────
+  // ── RENDER ───────────────────────────────────────────────
   return (
-    <div className="space-y-4">
-      {/* Progress */}
+    <div className="flex flex-col gap-3">
+
+      {/* Progress bar */}
       <div className="flex items-center gap-3">
         <ProgressBar value={pct} height="h-2" color="from-amber-500 to-orange-400" />
-        <span className="text-xs text-gray-400 shrink-0 font-medium">
-          {step + 1} / {scenario.steps?.length}
+        <span className="text-xs text-gray-400 shrink-0 font-semibold">
+          {Math.min(step + 1, scenario.steps?.length)} / {scenario.steps?.length}
         </span>
       </div>
 
-      {/* Client message — key=msgKey so animation re-triggers on every text change */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={msgKey}
-          initial={{ x: -20, opacity: 0 }}
-          animate={{ x:   0, opacity: 1 }}
-          exit={{   x:  20, opacity: 0 }}
-          className="bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded-2xl p-4"
-        >
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-xl shrink-0">
-              😤
-            </div>
-            <div className="flex-1">
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-semibold text-orange-700">Mijoz</span>
-                {/* Volume2: replays current message audio */}
-                {currentAudioUrl.current && (
-                  <button
-                    onClick={() => playClientAudio(currentAudioUrl.current)}
-                    className="text-orange-400 hover:text-orange-600 transition-colors"
-                    title="Ovozni eshiting"
-                  >
-                    <Volume2 size={14} />
-                  </button>
-                )}
-              </div>
-              <p className="text-gray-800 text-sm leading-relaxed">{clientText}</p>
-            </div>
-          </div>
-        </motion.div>
-      </AnimatePresence>
+      {/* ── Chat log ─────────────────────────────────────── */}
+      <div className="space-y-2.5 max-h-[380px] min-h-[180px] overflow-y-auto scrollbar-hide px-0.5 pb-1">
+        <AnimatePresence initial={false}>
+          {chatLog.map((msg, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 8, scale: 0.97 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.22 }}
+              className={`flex gap-2.5 ${msg.type === "employee" ? "justify-end" : "justify-start"}`}
+            >
+              {msg.type === "client" ? (
+                /* ── Client bubble (left) ── */
+                <div className="flex items-start gap-2.5 max-w-[78%]">
+                  <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-base shrink-0 mt-0.5 shadow-sm">
+                    😤
+                  </div>
+                  <div>
+                    <div className="bg-gradient-to-br from-orange-50 to-red-50 border border-orange-200 rounded-2xl rounded-tl-sm px-3.5 py-2.5 shadow-xs">
+                      <p className="text-[10px] font-bold text-orange-500 mb-1 uppercase tracking-wider">Mijoz</p>
+                      <p className="text-gray-800 text-sm leading-relaxed">{msg.text}</p>
+                    </div>
+                    {msg.audioUrl && (
+                      <button
+                        onClick={() => playClientAudio(msg.audioUrl)}
+                        className="mt-1 ml-1 flex items-center gap-1 text-[10px] text-orange-400 hover:text-orange-600 transition-colors font-medium"
+                      >
+                        <Volume2 size={10} /> Eshitish
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                /* ── Employee bubble (right) ── */
+                <div className="flex items-start gap-2.5 max-w-[78%]">
+                  <div>
+                    <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl rounded-tr-sm px-3.5 py-2.5 shadow-xs">
+                      <p className="text-[10px] font-bold text-blue-200 mb-1 uppercase tracking-wider">Siz</p>
+                      <p className="text-white text-sm leading-relaxed">{msg.text}</p>
+                    </div>
+                  </div>
+                  <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0 mt-0.5 text-xl shadow-sm">
+                    👤
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          ))}
+        </AnimatePresence>
 
-      {/* Hint */}
-      {currentStep?.hint && (
+        {/* Typing indicator */}
+        {loading && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex gap-2.5 justify-start">
+            <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-base shrink-0">😤</div>
+            <div className="bg-orange-50 border border-orange-200 rounded-2xl rounded-tl-sm px-4 py-3 shadow-xs">
+              <div className="flex gap-1 items-center h-4">
+                {[0, 1, 2].map((i) => (
+                  <motion.div key={i} className="w-1.5 h-1.5 bg-orange-400 rounded-full"
+                    animate={{ y: [0, -4, 0] }}
+                    transition={{ duration: 0.55, repeat: Infinity, delay: i * 0.14 }} />
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        <div ref={chatEndRef} />
+      </div>
+
+      {/* ── Hint ─────────────────────────────────────────── */}
+      {currentStep?.hint && !pendingFinish && (
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }}
           className="flex items-start gap-2 bg-blue-50 border border-blue-100 rounded-xl px-3 py-2.5"
         >
-          <AlertCircle size={14} className="text-blue-500 shrink-0 mt-0.5" />
+          <AlertCircle size={13} className="text-blue-400 shrink-0 mt-0.5" />
           <p className="text-xs text-blue-700">
-            <span className="font-semibold">Maslahat: </span>{currentStep.hint}
+            <span className="font-bold">Maslahat: </span>{currentStep.hint}
           </p>
         </motion.div>
       )}
 
-      {/* Conversation history */}
-      {history.length > 0 && (
-        <div className="space-y-2 max-h-40 overflow-y-auto scrollbar-hide">
-          {history.map((h, i) => (
-            <div key={i} className="flex justify-end">
-              <div className="bg-primary-700 text-white px-3 py-2 rounded-2xl rounded-br-sm text-xs max-w-[75%]">
-                {h.employee}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Feedback */}
+      {/* ── Feedback ─────────────────────────────────────── */}
       <AnimatePresence>
         {lastFeedback && (
           <motion.div
-            initial={{ opacity: 0, y: -10, scale: 0.95 }}
-            animate={{ opacity: 1, y:   0, scale: 1    }}
-            exit={{   opacity: 0,           scale: 0.95 }}
+            initial={{ opacity: 0, y: -8, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.96 }}
             className={`flex items-start gap-2.5 p-3 rounded-xl border ${
-              lastFeedback.isCorrect
-                ? "bg-emerald-50 border-emerald-200"
-                : "bg-amber-50 border-amber-200"
+              lastFeedback.isCorrect ? "bg-emerald-50 border-emerald-200" : "bg-amber-50 border-amber-200"
             }`}
           >
             {lastFeedback.isCorrect
               ? <CheckCircle size={15} className="text-emerald-600 shrink-0 mt-0.5" />
               : <XCircle    size={15} className="text-amber-500  shrink-0 mt-0.5" />
             }
-            <p className={`text-xs font-semibold flex-1 ${
-              lastFeedback.isCorrect ? "text-emerald-700" : "text-amber-700"
-            }`}>
+            <p className={`text-xs font-semibold flex-1 ${lastFeedback.isCorrect ? "text-emerald-700" : "text-amber-700"}`}>
               {lastFeedback.feedback}
             </p>
-            <span className={`text-xs font-bold shrink-0 ${
-              lastFeedback.isCorrect ? "text-emerald-600" : "text-amber-600"
-            }`}>
+            <span className={`text-xs font-bold shrink-0 ${lastFeedback.isCorrect ? "text-emerald-600" : "text-amber-600"}`}>
               +{lastFeedback.score}
             </span>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* ── Input area: TEXT or VOICE ── */}
-      {mode === "voice" ? (
+      {/* ── Yakunlash / Input area ───────────────────────── */}
+      {pendingFinish ? (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
+          <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-2xl px-4 py-4 text-center">
+            <p className="text-base font-bold text-emerald-700">🎉 Barcha savollarga javob berdingiz!</p>
+            <p className="text-sm text-emerald-600 mt-1">
+              Jami ball:&nbsp;
+              <span className="font-black text-xl text-emerald-700">{totalScore}</span>
+              <span className="text-emerald-300 mx-1">/</span>
+              <span className="font-semibold">{scenario.max_score}</span>
+            </p>
+          </div>
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={handleFinish}
+            className="w-full btn-primary py-3 text-[15px] font-bold gap-2 justify-center"
+          >
+            <Flag size={17} />
+            Yakunlash va natijani ko'rish
+          </motion.button>
+        </motion.div>
+
+      ) : mode === "voice" ? (
+        /* ── Voice input ── */
         <div className="flex flex-col items-center gap-3 py-2">
-          <p className={`text-xs font-medium ${
-            recStatus === "recording"  ? "text-red-500"    :
-            recStatus === "processing" ? "text-amber-500"  :
-            loading                    ? "text-amber-500"  :
-                                         "text-gray-400"
+          <p className={`text-xs font-semibold ${
+            recStatus === "recording"  ? "text-red-500" :
+            recStatus === "processing" ? "text-amber-500" :
+            loading                    ? "text-amber-500" : "text-gray-400"
           }`}>
             {recStatus === "recording"  ? "🔴 Eshitilmoqda — qo'yib yuboring" :
-             recStatus === "processing" ? "⏳ Tahlil qilinmoqda..."           :
-             loading                    ? "⏳ Javob yuklanmoqda..."            :
+             recStatus === "processing" ? "⏳ Tahlil qilinmoqda..." :
+             loading                    ? "⏳ Javob yuklanmoqda..." :
                                           "Bosib turing va javob bering"}
           </p>
 
-          {/* Waveform */}
           <AnimatePresence>
             {recStatus === "recording" && (
-              <motion.div
-                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                className="flex items-center gap-1 h-5"
-              >
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                className="flex items-center gap-1 h-5">
                 {[...Array(6)].map((_, i) => (
                   <div key={i} className="w-1.5 bg-red-400 rounded-full wave-bar"
                     style={{ animationDelay: `${i * 0.08}s` }} />
@@ -442,16 +421,15 @@ export default function DifficultClient({ scenario, mode = "text", onComplete })
             )}
           </AnimatePresence>
 
-          {/* Mic button */}
           <div className="relative">
             {recStatus === "recording" && (
               <>
                 <motion.div className="absolute inset-0 rounded-full bg-red-400"
-                  animate={{ scale: [1,1.5,1], opacity: [0.4,0,0.4] }}
-                  transition={{ duration: 1.5, repeat: Infinity }} />
+                  animate={{ scale:[1,1.5,1], opacity:[0.4,0,0.4] }}
+                  transition={{ duration:1.5, repeat:Infinity }} />
                 <motion.div className="absolute inset-0 rounded-full bg-red-300"
-                  animate={{ scale: [1,1.8,1], opacity: [0.2,0,0.2] }}
-                  transition={{ duration: 1.5, repeat: Infinity, delay: 0.3 }} />
+                  animate={{ scale:[1,1.8,1], opacity:[0.2,0,0.2] }}
+                  transition={{ duration:1.5, repeat:Infinity, delay:0.3 }} />
               </>
             )}
             <motion.button
@@ -463,24 +441,21 @@ export default function DifficultClient({ scenario, mode = "text", onComplete })
               whileTap={{ scale: 0.9 }}
               className={`relative w-16 h-16 rounded-full flex items-center justify-center text-white
                 shadow-lg select-none transition-all duration-200
-                ${recStatus === "recording"
-                  ? "bg-red-500 scale-110"
-                  : isBusy
-                  ? "bg-gray-300 cursor-not-allowed"
-                  : "bg-primary-700 hover:bg-primary-800 cursor-pointer"
-                }`}
+                ${recStatus === "recording" ? "bg-red-500 scale-110" :
+                  isBusy ? "bg-gray-300 cursor-not-allowed" :
+                  "bg-primary-700 hover:bg-primary-800 cursor-pointer"}`}
             >
               <AnimatePresence mode="wait">
                 {(recStatus === "processing" || loading) ? (
-                  <motion.div key="s" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}>
+                  <motion.div key="s" initial={{scale:0}} animate={{scale:1}} exit={{scale:0}}>
                     <Loader2 size={22} className="animate-spin" />
                   </motion.div>
                 ) : recStatus === "recording" ? (
-                  <motion.div key="r" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}>
+                  <motion.div key="r" initial={{scale:0}} animate={{scale:1}} exit={{scale:0}}>
                     <MicOff size={22} />
                   </motion.div>
                 ) : (
-                  <motion.div key="i" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}>
+                  <motion.div key="i" initial={{scale:0}} animate={{scale:1}} exit={{scale:0}}>
                     <Mic size={22} />
                   </motion.div>
                 )}
@@ -488,36 +463,40 @@ export default function DifficultClient({ scenario, mode = "text", onComplete })
             </motion.button>
           </div>
         </div>
-      ) : (
-        <div className="flex gap-2">
-          <input
-            ref={inputRef}
-            value={employeeInput}
-            onChange={(e) => setEmployeeInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleTextSend()}
-            placeholder="Mijozga javob bering..."
-            disabled={isBusy}
-            className="input-field flex-1"
-            autoFocus
-          />
-          <motion.button
-            whileTap={{ scale: 0.92 }}
-            onClick={handleTextSend}
-            disabled={isBusy || !employeeInput.trim()}
-            className="btn-primary px-4 shrink-0"
-          >
-            {loading
-              ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              : <Send size={16} />
-            }
-          </motion.button>
-        </div>
-      )}
 
-      <div className="flex justify-between text-xs text-gray-400">
-        <span>Jami ball: <span className="font-semibold text-primary-700">{totalScore}</span></span>
-        <span>Max: {scenario.max_score}</span>
-      </div>
+      ) : (
+        /* ── Text input ── */
+        <>
+          <div className="flex gap-2">
+            <input
+              ref={inputRef}
+              value={employeeInput}
+              onChange={(e) => setEmployeeInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleTextSend()}
+              placeholder="Mijozga javob bering..."
+              disabled={isBusy}
+              className="input-field flex-1"
+              autoFocus
+            />
+            <motion.button
+              whileTap={{ scale: 0.92 }}
+              onClick={handleTextSend}
+              disabled={isBusy || !employeeInput.trim()}
+              className="btn-primary px-4 shrink-0"
+            >
+              {loading
+                ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                : <Send size={16} />
+              }
+            </motion.button>
+          </div>
+
+          <div className="flex justify-between text-xs text-gray-400">
+            <span>Jami ball: <span className="font-bold text-primary-700">{totalScore}</span></span>
+            <span>Max: <span className="font-semibold">{scenario.max_score}</span></span>
+          </div>
+        </>
+      )}
     </div>
   );
 }
