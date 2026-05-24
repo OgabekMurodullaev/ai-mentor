@@ -12,7 +12,7 @@ React + Vite frontend · Django + DRF backend · AISHA AI ovoz · Groq RAG chatb
 ### 1. Reponi klonlash
 
 ```bash
-git clone https://github.com/<your-username>/ai-mentor.git
+git clone https://github.com/OgabekMurodullaev/ai-mentor.git
 cd ai-mentor
 ```
 
