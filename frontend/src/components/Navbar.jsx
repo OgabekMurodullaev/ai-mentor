@@ -149,7 +149,8 @@ export default function Navbar() {
                 <motion.div
                   animate={{ x: isDemo ? 14 : 2 }}
                   transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                  className="absolute top-0.5 w-2.5 h-2.5 bg-white rounded-full shadow-sm"
+                  className="absolute top-0.5 w-2.5 h-2.5 rounded-full shadow-sm"
+                  style={{ backgroundColor: "white" }}
                 />
               </div>
             </motion.button>

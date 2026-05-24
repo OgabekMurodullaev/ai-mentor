@@ -201,33 +201,44 @@
 .dark .text-orange-700                        { color: #fb923c; }
 
 /* ── Backgrounds ───────────────────────────────────────── */
-.dark .bg-white                              { background-color: rgba(10, 17, 32, 0.82); }
-.dark .bg-slate-50, .dark .bg-gray-50        { background-color: rgba(10, 17, 32, 0.55); }
-.dark .bg-slate-100,.dark .bg-gray-100       { background-color: rgba(20, 30, 52, 0.75); }
-.dark .bg-slate-200,.dark .bg-gray-200       { background-color: rgba(30, 44, 70, 0.90); }
+/* :not([class*="dark:bg"]) → skip elements that already have an explicit dark:bg-* variant
+   so Tailwind's generated dark: utilities win on those elements              */
+.dark .bg-white:not([class*="dark:bg"])                               { background-color: rgba(10, 17, 32, 0.82); }
+.dark .bg-slate-50:not([class*="dark:bg"]),
+.dark .bg-gray-50:not([class*="dark:bg"])                             { background-color: rgba(10, 17, 32, 0.55); }
+.dark .bg-slate-100:not([class*="dark:bg"]),
+.dark .bg-gray-100:not([class*="dark:bg"])                            { background-color: rgba(20, 30, 52, 0.75); }
+.dark .bg-slate-200:not([class*="dark:bg"]),
+.dark .bg-gray-200:not([class*="dark:bg"])                            { background-color: rgba(30, 44, 70, 0.90); }
 
 /* Color-tinted light backgrounds → dark tinted */
-.dark .bg-blue-50,    .dark .bg-primary-50   { background-color: rgba(59, 130, 246, 0.09); }
-.dark .bg-blue-100                           { background-color: rgba(59, 130, 246, 0.14); }
-.dark .bg-emerald-50                         { background-color: rgba(16, 185, 129, 0.09); }
-.dark .bg-emerald-100                        { background-color: rgba(16, 185, 129, 0.14); }
-.dark .bg-amber-50                           { background-color: rgba(245, 158, 11, 0.09); }
-.dark .bg-amber-100                          { background-color: rgba(245, 158, 11, 0.14); }
-.dark .bg-red-50                             { background-color: rgba(239, 68, 68, 0.09); }
-.dark .bg-red-100                            { background-color: rgba(239, 68, 68, 0.14); }
-.dark .bg-orange-50                          { background-color: rgba(249, 115, 22, 0.09); }
-.dark .bg-orange-100                         { background-color: rgba(249, 115, 22, 0.14); }
-.dark .bg-violet-50                          { background-color: rgba(139, 92, 246, 0.09); }
-.dark .bg-violet-100                         { background-color: rgba(139, 92, 246, 0.14); }
-.dark .bg-teal-50                            { background-color: rgba(20, 184, 166, 0.09); }
-.dark .bg-rose-50                            { background-color: rgba(244, 63, 94, 0.09); }
-.dark .bg-rose-100                           { background-color: rgba(244, 63, 94, 0.14); }
+.dark .bg-blue-50:not([class*="dark:bg"]),
+.dark .bg-primary-50:not([class*="dark:bg"])                          { background-color: rgba(59, 130, 246, 0.09); }
+.dark .bg-blue-100:not([class*="dark:bg"])                            { background-color: rgba(59, 130, 246, 0.14); }
+.dark .bg-emerald-50:not([class*="dark:bg"])                          { background-color: rgba(16, 185, 129, 0.09); }
+.dark .bg-emerald-100:not([class*="dark:bg"])                         { background-color: rgba(16, 185, 129, 0.14); }
+.dark .bg-amber-50:not([class*="dark:bg"])                            { background-color: rgba(245, 158, 11, 0.09); }
+.dark .bg-amber-100:not([class*="dark:bg"])                           { background-color: rgba(245, 158, 11, 0.14); }
+.dark .bg-red-50:not([class*="dark:bg"])                              { background-color: rgba(239, 68, 68, 0.09); }
+.dark .bg-red-100:not([class*="dark:bg"])                             { background-color: rgba(239, 68, 68, 0.14); }
+.dark .bg-orange-50:not([class*="dark:bg"])                           { background-color: rgba(249, 115, 22, 0.09); }
+.dark .bg-orange-100:not([class*="dark:bg"])                          { background-color: rgba(249, 115, 22, 0.14); }
+.dark .bg-violet-50:not([class*="dark:bg"])                           { background-color: rgba(139, 92, 246, 0.09); }
+.dark .bg-violet-100:not([class*="dark:bg"])                          { background-color: rgba(139, 92, 246, 0.14); }
+.dark .bg-teal-50:not([class*="dark:bg"])                             { background-color: rgba(20, 184, 166, 0.09); }
+.dark .bg-rose-50:not([class*="dark:bg"])                             { background-color: rgba(244, 63, 94, 0.09); }
+.dark .bg-rose-100:not([class*="dark:bg"])                            { background-color: rgba(244, 63, 94, 0.14); }
 
 /* ── Borders ───────────────────────────────────────────── */
-.dark .border-slate-50,  .dark .border-gray-50  { border-color: rgba(255,255,255,0.04); }
-.dark .border-slate-100, .dark .border-gray-100 { border-color: rgba(255,255,255,0.07); }
-.dark .border-slate-200, .dark .border-gray-200 { border-color: rgba(255,255,255,0.10); }
-.dark .border-slate-300, .dark .border-gray-300 { border-color: rgba(255,255,255,0.15); }
+/* Same :not guard for border overrides */
+.dark .border-slate-50:not([class*="dark:border"]),
+.dark .border-gray-50:not([class*="dark:border"])                     { border-color: rgba(255,255,255,0.04); }
+.dark .border-slate-100:not([class*="dark:border"]),
+.dark .border-gray-100:not([class*="dark:border"])                    { border-color: rgba(255,255,255,0.07); }
+.dark .border-slate-200:not([class*="dark:border"]),
+.dark .border-gray-200:not([class*="dark:border"])                    { border-color: rgba(255,255,255,0.10); }
+.dark .border-slate-300:not([class*="dark:border"]),
+.dark .border-gray-300:not([class*="dark:border"])                    { border-color: rgba(255,255,255,0.15); }
 
 .dark .border-blue-100,  .dark .border-blue-200   { border-color: rgba(59,130,246,0.22); }
 .dark .border-blue-300                            { border-color: rgba(59,130,246,0.35); }
