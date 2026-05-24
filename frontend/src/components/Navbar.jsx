@@ -35,12 +35,16 @@ export default function Navbar() {
   const roleInfo     = ROLE_LABELS[user?.role] || ROLE_LABELS.EMPLOYEE;
 
   return (
-    <nav className="sticky top-0 z-50
-      bg-white/95 dark:bg-slate-900/92
-      backdrop-blur-sm
-      border-b border-slate-200 dark:border-slate-700/50
-      shadow-[0_1px_8px_rgba(15,23,42,0.06)] dark:shadow-[0_1px_16px_rgba(0,0,0,0.35)]
-      transition-colors duration-300">
+    <nav
+      style={{
+        backgroundColor: dark ? "rgba(15,23,42,0.93)" : "rgba(255,255,255,0.96)",
+        borderBottomColor: dark ? "rgba(100,116,139,0.3)" : "rgba(226,232,240,1)",
+        boxShadow: dark
+          ? "0 1px 16px rgba(0,0,0,0.4)"
+          : "0 1px 8px rgba(15,23,42,0.06)",
+      }}
+      className="sticky top-0 z-50 backdrop-blur-sm border-b transition-colors duration-300"
+    >
       <div className="max-w-6xl mx-auto px-5">
         <div className="flex items-center justify-between h-[62px]">
 
@@ -50,8 +54,16 @@ export default function Navbar() {
               <Sparkles size={16} className="text-amber-300" />
             </div>
             <div className="leading-none">
-              <span className="font-bold text-slate-900 dark:text-white text-[15px] tracking-tight">AI-Mentor</span>
-              <span className="block text-[10px] text-slate-400 dark:text-slate-500 font-semibold tracking-[0.12em] uppercase mt-0.5">
+              <span
+                style={{ color: dark ? "#f1f5f9" : "#0f172a" }}
+                className="font-bold text-[15px] tracking-tight"
+              >
+                AI-Mentor
+              </span>
+              <span
+                style={{ color: dark ? "#64748b" : "#94a3b8" }}
+                className="block text-[10px] font-semibold tracking-[0.12em] uppercase mt-0.5"
+              >
                 Turonbank
               </span>
             </div>
@@ -63,17 +75,24 @@ export default function Navbar() {
               const active = location.pathname === to;
               return (
                 <Link key={to} to={to}>
-                  <div className={`relative flex items-center gap-2 px-4 py-2 rounded-xl text-[13.5px] font-semibold transition-all duration-200 ${
-                    active
-                      ? "text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-500/12"
-                      : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/60"
-                  }`}>
+                  <div
+                    style={{
+                      color: active
+                        ? (dark ? "#93c5fd" : "#1d4ed8")
+                        : (dark ? "#94a3b8" : "#64748b"),
+                      backgroundColor: active
+                        ? (dark ? "rgba(59,130,246,0.12)" : "rgba(239,246,255,1)")
+                        : "transparent",
+                    }}
+                    className="relative flex items-center gap-2 px-4 py-2 rounded-xl text-[13.5px] font-semibold transition-all duration-200 hover:opacity-90"
+                  >
                     <Icon size={15} strokeWidth={active ? 2.5 : 2} />
                     {label}
                     {active && (
                       <motion.div
                         layoutId="nav-indicator"
-                        className="absolute bottom-0.5 left-3 right-3 h-0.5 rounded-full bg-blue-600 dark:bg-blue-400"
+                        className="absolute bottom-0.5 left-3 right-3 h-0.5 rounded-full"
+                        style={{ backgroundColor: dark ? "#93c5fd" : "#2563eb" }}
                         transition={{ type: "spring", stiffness: 380, damping: 30 }}
                       />
                     )}
@@ -84,11 +103,17 @@ export default function Navbar() {
 
             {isHROrAdmin && (
               <Link to="/hr">
-                <div className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[13.5px] font-semibold transition-all duration-200 ${
-                  location.pathname === "/hr"
-                    ? "text-violet-700 dark:text-violet-300 bg-violet-50 dark:bg-violet-500/12"
-                    : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/60"
-                }`}>
+                <div
+                  style={{
+                    color: location.pathname === "/hr"
+                      ? (dark ? "#c4b5fd" : "#6d28d9")
+                      : (dark ? "#94a3b8" : "#64748b"),
+                    backgroundColor: location.pathname === "/hr"
+                      ? (dark ? "rgba(139,92,246,0.12)" : "rgba(245,243,255,1)")
+                      : "transparent",
+                  }}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-[13.5px] font-semibold transition-all duration-200"
+                >
                   <Users size={15} />
                   HR Panel
                 </div>
@@ -103,12 +128,12 @@ export default function Navbar() {
             <motion.button
               whileTap={{ scale: 0.88 }}
               onClick={toggleTheme}
-              className="w-8 h-8 rounded-xl border border-slate-200 dark:border-slate-700
-                         bg-white dark:bg-slate-800/80
-                         flex items-center justify-center
-                         text-slate-500 dark:text-slate-300
-                         hover:bg-slate-100 dark:hover:bg-slate-700
-                         transition-all duration-200"
+              style={{
+                backgroundColor: dark ? "rgba(30,41,59,0.8)" : "#ffffff",
+                borderColor: dark ? "rgba(100,116,139,0.5)" : "#e2e8f0",
+                color: dark ? "#cbd5e1" : "#64748b",
+              }}
+              className="w-8 h-8 rounded-xl border flex items-center justify-center transition-all duration-200"
               title={dark ? "Kunduzgi rejim" : "Tungi rejim"}
             >
               <AnimatePresence mode="wait" initial={false}>
@@ -136,16 +161,24 @@ export default function Navbar() {
             <motion.button
               whileTap={{ scale: 0.95 }}
               onClick={toggleDemo}
-              className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-[12px] font-semibold transition-all duration-200 ${
-                isDemo
-                  ? "bg-amber-50 dark:bg-amber-500/12 border-amber-300 dark:border-amber-500/30 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-500/18"
-                  : "bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700/60 hover:text-slate-600 dark:hover:text-slate-300"
-              }`}
+              style={isDemo ? {
+                backgroundColor: dark ? "rgba(245,158,11,0.12)" : "#fffbeb",
+                borderColor: dark ? "rgba(245,158,11,0.35)" : "#fcd34d",
+                color: dark ? "#fcd34d" : "#b45309",
+              } : {
+                backgroundColor: dark ? "rgba(30,41,59,0.6)" : "#f8fafc",
+                borderColor: dark ? "rgba(100,116,139,0.4)" : "#e2e8f0",
+                color: dark ? "#64748b" : "#94a3b8",
+              }}
+              className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-[12px] font-semibold transition-all duration-200"
               title={isDemo ? "Demo rejim yoniq" : "Demo rejimni yoqish"}
             >
               <FlaskConical size={11} />
               <span>Demo</span>
-              <div className={`w-7 h-3.5 rounded-full relative transition-colors duration-200 ${isDemo ? "bg-amber-400" : "bg-slate-200 dark:bg-slate-600"}`}>
+              <div
+                style={{ backgroundColor: isDemo ? "#f59e0b" : (dark ? "#334155" : "#e2e8f0") }}
+                className="w-7 h-3.5 rounded-full relative transition-colors duration-200"
+              >
                 <motion.div
                   animate={{ x: isDemo ? 14 : 2 }}
                   transition={{ type: "spring", stiffness: 500, damping: 30 }}
@@ -155,27 +188,39 @@ export default function Navbar() {
               </div>
             </motion.button>
 
-            <div className="hidden sm:block w-px h-5 bg-slate-200 dark:bg-slate-700 mx-1" />
+            <div
+              style={{ backgroundColor: dark ? "rgba(100,116,139,0.3)" : "#e2e8f0" }}
+              className="hidden sm:block w-px h-5 mx-1"
+            />
 
             {/* User menu */}
             <div className="relative">
               <motion.button
                 whileTap={{ scale: 0.97 }}
                 onClick={() => setDropdownOpen((v) => !v)}
-                className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/70 transition-colors"
+                className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl transition-colors"
+                style={{ backgroundColor: "transparent" }}
+                onMouseEnter={e => e.currentTarget.style.backgroundColor = dark ? "rgba(30,41,59,0.7)" : "#f1f5f9"}
+                onMouseLeave={e => e.currentTarget.style.backgroundColor = "transparent"}
               >
                 <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-700 to-blue-500 flex items-center justify-center text-white font-bold text-sm shrink-0 shadow-sm">
                   {user?.full_name?.[0] || "U"}
                 </div>
                 <div className="hidden sm:block text-left leading-none">
-                  <p className="text-slate-800 dark:text-slate-100 text-[13px] font-semibold">{user?.full_name?.split(" ")[0]}</p>
+                  <p
+                    style={{ color: dark ? "#f1f5f9" : "#1e293b" }}
+                    className="text-[13px] font-semibold"
+                  >
+                    {user?.full_name?.split(" ")[0]}
+                  </p>
                   <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-md mt-0.5 inline-block ${roleInfo.cls}`}>
                     {roleInfo.label}
                   </span>
                 </div>
                 <ChevronDown
                   size={13}
-                  className={`text-slate-400 dark:text-slate-500 transition-transform duration-200 hidden sm:block ${dropdownOpen ? "rotate-180" : ""}`}
+                  style={{ color: dark ? "#64748b" : "#94a3b8" }}
+                  className={`transition-transform duration-200 hidden sm:block ${dropdownOpen ? "rotate-180" : ""}`}
                 />
               </motion.button>
 
@@ -188,30 +233,54 @@ export default function Navbar() {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 6, scale: 0.96 }}
                       transition={{ duration: 0.14, ease: "easeOut" }}
-                      className="absolute right-0 top-full mt-2 w-56 rounded-2xl shadow-xl overflow-hidden z-50
-                                 bg-white dark:bg-slate-900
-                                 border border-slate-100 dark:border-slate-700/60"
+                      style={{
+                        backgroundColor: dark ? "#0f172a" : "#ffffff",
+                        borderColor: dark ? "rgba(100,116,139,0.25)" : "#f1f5f9",
+                      }}
+                      className="absolute right-0 top-full mt-2 w-56 rounded-2xl shadow-xl overflow-hidden z-50 border"
                     >
-                      <div className="px-4 py-3.5 border-b border-slate-100 dark:border-slate-700/60 bg-gradient-to-r from-slate-50 to-white dark:from-slate-800/60 dark:to-slate-900/60">
+                      <div
+                        style={{
+                          borderBottomColor: dark ? "rgba(100,116,139,0.2)" : "#f1f5f9",
+                          background: dark
+                            ? "linear-gradient(to right, rgba(15,23,42,0.8), rgba(15,23,42,0.6))"
+                            : "linear-gradient(to right, #f8fafc, #ffffff)",
+                        }}
+                        className="px-4 py-3.5 border-b"
+                      >
                         <div className="flex items-center gap-2.5">
                           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-700 to-blue-500 flex items-center justify-center text-white font-bold text-sm">
                             {user?.full_name?.[0]}
                           </div>
                           <div>
-                            <p className="font-semibold text-slate-800 dark:text-slate-100 text-sm leading-tight">{user?.full_name}</p>
-                            <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5 truncate max-w-[140px]">{user?.email}</p>
+                            <p
+                              style={{ color: dark ? "#f1f5f9" : "#1e293b" }}
+                              className="font-semibold text-sm leading-tight"
+                            >
+                              {user?.full_name}
+                            </p>
+                            <p
+                              style={{ color: dark ? "#475569" : "#94a3b8" }}
+                              className="text-[11px] mt-0.5 truncate max-w-[140px]"
+                            >
+                              {user?.email}
+                            </p>
                           </div>
                         </div>
                       </div>
                       <div className="p-2">
                         {user?.branch && (
-                          <div className="px-3 py-1.5 text-[12px] text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                          <div
+                            style={{ color: dark ? "#64748b" : "#94a3b8" }}
+                            className="px-3 py-1.5 text-[12px] flex items-center gap-1.5"
+                          >
                             <span>📍</span> {user.branch}
                           </div>
                         )}
                         <button
                           onClick={handleLogout}
-                          className="w-full flex items-center gap-2 px-3 py-2.5 text-sm font-semibold text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl transition-colors mt-0.5"
+                          style={{ color: dark ? "#f87171" : "#ef4444" }}
+                          className="w-full flex items-center gap-2 px-3 py-2.5 text-sm font-semibold hover:bg-red-500/10 rounded-xl transition-colors mt-0.5"
                         >
                           <LogOut size={14} />
                           Chiqish
