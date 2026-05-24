@@ -174,31 +174,40 @@
 .dark .stat-card             { background: rgba(10, 17, 32, 0.82); border-color: rgba(255,255,255,0.08); }
 
 /* ── Text ──────────────────────────────────────────────── */
-.dark .text-gray-900, .dark .text-gray-800  { color: #f1f5f9; }
-.dark .text-gray-700                        { color: #e2e8f0; }
-.dark .text-gray-600                        { color: #cbd5e1; }
-.dark .text-gray-500                        { color: #94a3b8; }
-.dark .text-gray-400                        { color: #6b7280; }
-.dark .text-slate-900, .dark .text-slate-800{ color: #f1f5f9; }
-.dark .text-slate-700                       { color: #e2e8f0; }
-.dark .text-slate-600                       { color: #cbd5e1; }
-.dark .text-slate-500                       { color: #94a3b8; }
-.dark .text-slate-400                       { color: #6b7280; }
+/* :not([class*="dark:text"]) → skip elements that already carry an explicit
+   dark:text-* JSX variant so Tailwind's generated utility wins there        */
+.dark .text-gray-900:not([class*="dark:text"]),
+.dark .text-gray-800:not([class*="dark:text"])  { color: #f1f5f9; }
+.dark .text-gray-700:not([class*="dark:text"])  { color: #e2e8f0; }
+.dark .text-gray-600:not([class*="dark:text"])  { color: #cbd5e1; }
+.dark .text-gray-500:not([class*="dark:text"])  { color: #94a3b8; }
+.dark .text-gray-400:not([class*="dark:text"])  { color: #6b7280; }
+.dark .text-slate-900:not([class*="dark:text"]),
+.dark .text-slate-800:not([class*="dark:text"]) { color: #f1f5f9; }
+.dark .text-slate-700:not([class*="dark:text"]) { color: #e2e8f0; }
+.dark .text-slate-600:not([class*="dark:text"]) { color: #cbd5e1; }
+.dark .text-slate-500:not([class*="dark:text"]) { color: #94a3b8; }
+.dark .text-slate-400:not([class*="dark:text"]) { color: #6b7280; }
 
 /* Colored text on light-bg elements → brighten for dark bg */
-.dark .text-blue-700, .dark .text-primary-700 { color: #93c5fd; }
-.dark .text-blue-600                          { color: #60a5fa; }
-.dark .text-emerald-700                       { color: #6ee7b7; }
-.dark .text-emerald-600                       { color: #34d399; }
-.dark .text-amber-800                         { color: #fde68a; }
-.dark .text-amber-700                         { color: #fcd34d; }
-.dark .text-amber-600                         { color: #fbbf24; }
-.dark .text-amber-500                         { color: #f59e0b; }
-.dark .text-orange-600, .dark .text-orange-500{ color: #fb923c; }
-.dark .text-red-600,   .dark .text-red-500    { color: #f87171; }
-.dark .text-violet-700,.dark .text-violet-600 { color: #a78bfa; }
-.dark .text-rose-700,  .dark .text-rose-600   { color: #fb7185; }
-.dark .text-orange-700                        { color: #fb923c; }
+.dark .text-blue-700:not([class*="dark:text"]),
+.dark .text-primary-700:not([class*="dark:text"]) { color: #93c5fd; }
+.dark .text-blue-600:not([class*="dark:text"])    { color: #60a5fa; }
+.dark .text-emerald-700:not([class*="dark:text"]) { color: #6ee7b7; }
+.dark .text-emerald-600:not([class*="dark:text"]) { color: #34d399; }
+.dark .text-amber-800:not([class*="dark:text"])   { color: #fde68a; }
+.dark .text-amber-700:not([class*="dark:text"])   { color: #fcd34d; }
+.dark .text-amber-600:not([class*="dark:text"])   { color: #fbbf24; }
+.dark .text-amber-500:not([class*="dark:text"])   { color: #f59e0b; }
+.dark .text-orange-600:not([class*="dark:text"]),
+.dark .text-orange-500:not([class*="dark:text"])  { color: #fb923c; }
+.dark .text-red-600:not([class*="dark:text"]),
+.dark .text-red-500:not([class*="dark:text"])     { color: #f87171; }
+.dark .text-violet-700:not([class*="dark:text"]),
+.dark .text-violet-600:not([class*="dark:text"])  { color: #a78bfa; }
+.dark .text-rose-700:not([class*="dark:text"]),
+.dark .text-rose-600:not([class*="dark:text"])    { color: #fb7185; }
+.dark .text-orange-700:not([class*="dark:text"])  { color: #fb923c; }
 
 /* ── Backgrounds ───────────────────────────────────────── */
 /* :not([class*="dark:bg"]) → skip elements that already have an explicit dark:bg-* variant
