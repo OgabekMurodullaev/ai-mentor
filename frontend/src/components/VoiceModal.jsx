@@ -213,7 +213,7 @@ export default function VoiceModal({ onClose }) {
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 50, scale: 0.96 }}
         transition={{ type: "spring", stiffness: 320, damping: 32 }}
-        className="w-full sm:max-w-md bg-white rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl flex flex-col"
+        className="w-full sm:max-w-md bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl dark:shadow-[0_25px_60px_rgba(0,0,0,0.6)] flex flex-col border-0 dark:border dark:border-slate-700/50"
         style={{ maxHeight: "88vh" }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -259,7 +259,7 @@ export default function VoiceModal({ onClose }) {
               animate={{ opacity: 1, y: 0 }}
               className="flex flex-col items-center justify-center h-full py-10 text-center"
             >
-              <div className="w-16 h-16 rounded-full bg-primary-50 border-2 border-primary-100 flex items-center justify-center mb-4">
+              <div className="w-16 h-16 rounded-full bg-primary-50 dark:bg-blue-500/12 border-2 border-primary-100 dark:border-blue-500/20 flex items-center justify-center mb-4">
                 <Mic size={26} className="text-primary-400" />
               </div>
               <p className="text-gray-600 text-sm font-medium">Ovozli suhbatni boshlang</p>
@@ -324,7 +324,7 @@ export default function VoiceModal({ onClose }) {
         </div>
 
         {/* ── Controls ── */}
-        <div className="px-6 pb-8 pt-4 flex flex-col items-center gap-3 shrink-0 border-t border-gray-100 bg-gray-50/50">
+        <div className="px-6 pb-8 pt-4 flex flex-col items-center gap-3 shrink-0 border-t border-gray-100 dark:border-slate-700/50 bg-gray-50/50 dark:bg-slate-900/80">
 
           <p className={`text-xs font-medium transition-colors ${STATUS_COLOR[status]}`}>
             {STATUS_TEXT[status]}

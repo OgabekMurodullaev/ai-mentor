@@ -1,6 +1,7 @@
-﻿import { useEffect } from "react";
+import { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import useAuthStore from "./store/authStore";
+import useThemeStore from "./store/themeStore";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
@@ -11,11 +12,17 @@ import HRDashboard from "./pages/HRDashboard";
 
 export default function App() {
   const initFromStorage = useAuthStore((s) => s.initFromStorage);
-  const loading = useAuthStore((s) => s.loading);
+  const loading         = useAuthStore((s) => s.loading);
+  const dark            = useThemeStore((s) => s.dark);
 
+  // Sync dark class on <html>
   useEffect(() => {
-    initFromStorage();
-  }, []);
+    const root = document.documentElement;
+    if (dark) root.classList.add("dark");
+    else      root.classList.remove("dark");
+  }, [dark]);
+
+  useEffect(() => { initFromStorage(); }, []);
 
   if (loading) {
     return (
@@ -33,15 +40,14 @@ export default function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route element={<ProtectedRoute />}>
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/chatbot" element={<Chatbot />} />
-          <Route path="/simulator" element={<Simulator />} />
-          <Route path="/leaderboard" element={<Leaderboard />} />
-          <Route path="/hr" element={<HRDashboard />} />
+          <Route path="/dashboard"  element={<Dashboard />}    />
+          <Route path="/chatbot"    element={<Chatbot />}       />
+          <Route path="/simulator"  element={<Simulator />}     />
+          <Route path="/leaderboard"element={<Leaderboard />}   />
+          <Route path="/hr"         element={<HRDashboard />}   />
         </Route>
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
     </BrowserRouter>
   );
 }
-

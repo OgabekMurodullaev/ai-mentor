@@ -199,7 +199,7 @@ export default function HRDashboard() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden"
+              className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl dark:shadow-[0_25px_60px_rgba(0,0,0,0.6)] w-full max-w-lg overflow-hidden border dark:border-slate-700/50"
             >
               <div className="px-6 py-5 flex items-center justify-between" style={{ background: "linear-gradient(135deg, #172554 0%, #1e3a8a 60%, #1d4ed8 100%)" }}>
                 <div>
@@ -293,22 +293,22 @@ export default function HRDashboard() {
         className="card overflow-hidden"
       >
         {/* Table controls */}
-        <div className="px-5 py-4 border-b border-gray-50 flex items-center justify-between flex-wrap gap-3">
+        <div className="px-5 py-4 border-b border-gray-50 dark:border-slate-800/60 flex items-center justify-between flex-wrap gap-3">
           <h3 className="font-semibold text-gray-800 text-sm flex items-center gap-2">
             <Users size={16} className="text-primary-700" />
             Hodimlar ({filtered.length})
           </h3>
           <div className="flex items-center gap-2">
             {/* Filter */}
-            <div className="flex gap-1 bg-gray-100 p-1 rounded-xl text-xs">
+            <div className="flex gap-1 bg-gray-100 dark:bg-slate-800/80 p-1 rounded-xl text-xs">
               {["ALL", "CASHIER", "CREDIT", "OPERATIONS", "SERVICE"].map((f) => (
                 <button
                   key={f}
                   onClick={() => setFilter(f)}
                   className={`px-2.5 py-1.5 rounded-lg font-medium transition-all ${
                     filter === f
-                      ? "bg-white text-primary-700 shadow-sm"
-                      : "text-gray-500 hover:text-gray-700"
+                      ? "bg-white dark:bg-slate-700 text-primary-700 dark:text-blue-300 shadow-sm"
+                      : "text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200"
                   }`}
                 >
                   {f === "ALL" ? "Barchasi" : LP_LABELS[f]}
@@ -321,9 +321,9 @@ export default function HRDashboard() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-gray-50/60">
+              <tr className="bg-gray-50/60 dark:bg-slate-900/70">
                 {["F.I.Sh", "Filial", "Yo'l", "Ball", "Progress", "Holat"].map((h) => (
-                  <th key={h} className="text-left px-5 py-3 text-xs text-gray-400 font-semibold uppercase tracking-wide whitespace-nowrap">
+                  <th key={h} className="text-left px-5 py-3 text-xs text-gray-400 dark:text-slate-500 font-semibold uppercase tracking-wide whitespace-nowrap">
                     {h}
                   </th>
                 ))}
@@ -336,7 +336,7 @@ export default function HRDashboard() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: i * 0.03 }}
-                  className="border-t border-gray-50 hover:bg-blue-50/30 transition-colors"
+                  className="border-t border-gray-50 dark:border-slate-800/50 hover:bg-blue-50/30 dark:hover:bg-blue-500/6 transition-colors"
                 >
                   <td className="px-5 py-3.5">
                     <div className="flex items-center gap-3">

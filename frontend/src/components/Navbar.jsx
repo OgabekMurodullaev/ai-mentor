@@ -2,11 +2,12 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LogOut, Bot, Monitor, Trophy, LayoutDashboard,
-  Users, ChevronDown, Sparkles, FlaskConical,
+  Users, ChevronDown, Sparkles, FlaskConical, Moon, Sun,
 } from "lucide-react";
 import { useState } from "react";
 import useAuthStore from "../store/authStore";
 import useDemoStore from "../store/demoStore";
+import useThemeStore from "../store/themeStore";
 
 const NAV_ITEMS = [
   { to: "/dashboard",   icon: LayoutDashboard, label: "Dashboard" },
@@ -16,177 +17,211 @@ const NAV_ITEMS = [
 ];
 
 const ROLE_LABELS = {
-  EMPLOYEE: { label: "Hodim",  cls: "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30" },
-  HR:       { label: "HR",     cls: "bg-violet-500/20 text-violet-300 border border-violet-500/30" },
-  ADMIN:    { label: "Admin",  cls: "bg-rose-500/20 text-rose-300 border border-rose-500/30" },
+  EMPLOYEE: { label: "Hodim", cls: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300" },
+  HR:       { label: "HR",    cls: "bg-violet-100 text-violet-700 dark:bg-violet-500/15 dark:text-violet-300"   },
+  ADMIN:    { label: "Admin", cls: "bg-rose-100 text-rose-700 dark:bg-rose-500/15 dark:text-rose-300"           },
 };
 
 export default function Navbar() {
-  const { user, logout } = useAuthStore();
-  const { isDemo, toggle: toggleDemo } = useDemoStore();
-  const navigate = useNavigate();
-  const location = useLocation();
+  const { user, logout }                = useAuthStore();
+  const { isDemo, toggle: toggleDemo }  = useDemoStore();
+  const { dark, toggle: toggleTheme }   = useThemeStore();
+  const navigate                        = useNavigate();
+  const location                        = useLocation();
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const handleLogout = () => { logout(); navigate("/login"); };
-  const isHROrAdmin = user?.role === "HR" || user?.role === "ADMIN";
-  const roleInfo = ROLE_LABELS[user?.role] || ROLE_LABELS.EMPLOYEE;
+  const isHROrAdmin  = user?.role === "HR" || user?.role === "ADMIN";
+  const roleInfo     = ROLE_LABELS[user?.role] || ROLE_LABELS.EMPLOYEE;
 
   return (
-    <nav
-      className="sticky top-0 z-50 border-b border-white/10"
-      style={{ background: "linear-gradient(135deg, #172554 0%, #1e3a8a 60%, #1d4ed8 100%)" }}
-    >
-      {/* subtle top glow line */}
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-400/40 to-transparent" />
+    <nav className="sticky top-0 z-50
+      bg-white/95 dark:bg-slate-900/92
+      backdrop-blur-sm
+      border-b border-slate-200 dark:border-slate-700/50
+      shadow-[0_1px_8px_rgba(15,23,42,0.06)] dark:shadow-[0_1px_16px_rgba(0,0,0,0.35)]
+      transition-colors duration-300">
+      <div className="max-w-6xl mx-auto px-5">
+        <div className="flex items-center justify-between h-[62px]">
 
-      <div className="max-w-6xl mx-auto px-4">
-        <div className="flex items-center justify-between h-[60px]">
-
-          {/* Logo */}
-          <Link to="/dashboard" className="flex items-center gap-2.5 shrink-0 group">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-gold to-gold-dark flex items-center justify-center shadow-glow-gold/50">
-              <Sparkles size={15} className="text-navy-dark" />
+          {/* ── Logo ──────────────────────────────────────────── */}
+          <Link to="/dashboard" className="flex items-center gap-3 shrink-0 group">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-700 to-blue-900 flex items-center justify-center shadow-sm group-hover:shadow-md group-hover:shadow-blue-500/30 transition-all duration-200">
+              <Sparkles size={16} className="text-amber-300" />
             </div>
             <div className="leading-none">
-              <span className="font-bold text-white text-[15px] tracking-tight">AI-Mentor</span>
-              <span className="block text-[10px] text-blue-300/80 font-medium tracking-wide">TURONBANK</span>
+              <span className="font-bold text-slate-900 dark:text-white text-[15px] tracking-tight">AI-Mentor</span>
+              <span className="block text-[10px] text-slate-400 dark:text-slate-500 font-semibold tracking-[0.12em] uppercase mt-0.5">
+                Turonbank
+              </span>
             </div>
           </Link>
 
-          {/* Nav links */}
+          {/* ── Nav links ─────────────────────────────────────── */}
           <div className="hidden md:flex items-center gap-0.5">
             {NAV_ITEMS.map(({ to, icon: Icon, label }) => {
               const active = location.pathname === to;
               return (
                 <Link key={to} to={to}>
-                  <motion.div
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.96 }}
-                    className={`relative flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium transition-all duration-200
-                      ${active
-                        ? "text-white bg-white/12"
-                        : "text-blue-200/80 hover:text-white hover:bg-white/8"
-                      }`}
-                  >
-                    <Icon size={14} strokeWidth={active ? 2.5 : 2} />
+                  <div className={`relative flex items-center gap-2 px-4 py-2 rounded-xl text-[13.5px] font-semibold transition-all duration-200 ${
+                    active
+                      ? "text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-500/12"
+                      : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/60"
+                  }`}>
+                    <Icon size={15} strokeWidth={active ? 2.5 : 2} />
                     {label}
                     {active && (
                       <motion.div
-                        layoutId="nav-pill"
-                        className="absolute inset-0 rounded-lg bg-white/12 -z-10"
-                        transition={{ type: "spring", stiffness: 400, damping: 32 }}
+                        layoutId="nav-indicator"
+                        className="absolute bottom-0.5 left-3 right-3 h-0.5 rounded-full bg-blue-600 dark:bg-blue-400"
+                        transition={{ type: "spring", stiffness: 380, damping: 30 }}
                       />
                     )}
-                    {active && (
-                      <span className="absolute bottom-0 left-3 right-3 h-[2px] rounded-full bg-gold" />
-                    )}
-                  </motion.div>
+                  </div>
                 </Link>
               );
             })}
+
             {isHROrAdmin && (
               <Link to="/hr">
-                <motion.div
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.96 }}
-                  className={`relative flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium transition-all duration-200
-                    ${location.pathname === "/hr"
-                      ? "text-white bg-white/12"
-                      : "text-blue-200/80 hover:text-white hover:bg-white/8"
-                    }`}
-                >
-                  <Users size={14} />
+                <div className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[13.5px] font-semibold transition-all duration-200 ${
+                  location.pathname === "/hr"
+                    ? "text-violet-700 dark:text-violet-300 bg-violet-50 dark:bg-violet-500/12"
+                    : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/60"
+                }`}>
+                  <Users size={15} />
                   HR Panel
-                </motion.div>
+                </div>
               </Link>
             )}
           </div>
 
-          {/* Demo mode toggle */}
-          <motion.button
-            whileTap={{ scale: 0.95 }}
-            onClick={toggleDemo}
-            className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition-all duration-200 ${
-              isDemo
-                ? "bg-gold/15 border-gold/40 text-gold hover:bg-gold/25"
-                : "bg-white/8 border-white/20 text-white/50 hover:text-white/80 hover:bg-white/12"
-            }`}
-            title={isDemo ? "Demo rejim yoniq — o'chirish uchun bosing" : "Demo rejimni yoqish"}
-          >
-            <FlaskConical size={12} />
-            <span>Demo</span>
-            {/* Toggle pill */}
-            <div className={`w-7 h-3.5 rounded-full relative transition-colors duration-200 ${
-              isDemo ? "bg-gold" : "bg-white/20"
-            }`}>
-              <motion.div
-                animate={{ x: isDemo ? 14 : 2 }}
-                transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                className="absolute top-0.5 w-2.5 h-2.5 bg-white rounded-full shadow-sm"
-              />
-            </div>
-            <span className={`text-[10px] ${isDemo ? "text-gold" : "text-white/40"}`}>
-              {isDemo ? "Yoniq" : "O'chiq"}
-            </span>
-          </motion.button>
+          {/* ── Right actions ─────────────────────────────────── */}
+          <div className="flex items-center gap-2">
 
-          {/* User menu */}
-          <div className="relative">
+            {/* Theme toggle */}
             <motion.button
-              whileTap={{ scale: 0.97 }}
-              onClick={() => setDropdownOpen((v) => !v)}
-              className="flex items-center gap-2 py-1.5 px-2.5 rounded-xl hover:bg-white/10 transition-colors"
+              whileTap={{ scale: 0.88 }}
+              onClick={toggleTheme}
+              className="w-8 h-8 rounded-xl border border-slate-200 dark:border-slate-700
+                         bg-white dark:bg-slate-800/80
+                         flex items-center justify-center
+                         text-slate-500 dark:text-slate-300
+                         hover:bg-slate-100 dark:hover:bg-slate-700
+                         transition-all duration-200"
+              title={dark ? "Kunduzgi rejim" : "Tungi rejim"}
             >
-              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-gold to-gold-dark flex items-center justify-center text-navy-dark font-bold text-xs shrink-0 shadow-sm">
-                {user?.full_name?.[0] || "U"}
-              </div>
-              <div className="hidden sm:block text-left">
-                <p className="text-white text-xs font-semibold leading-none">{user?.full_name?.split(" ")[0]}</p>
-                <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-md mt-0.5 inline-block ${roleInfo.cls}`}>
-                  {roleInfo.label}
-                </span>
-              </div>
-              <ChevronDown size={13} className={`text-blue-300/70 transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`} />
+              <AnimatePresence mode="wait" initial={false}>
+                {dark ? (
+                  <motion.div key="sun"
+                    initial={{ scale: 0, rotate: -90 }}
+                    animate={{ scale: 1, rotate: 0 }}
+                    exit={{ scale: 0, rotate: 90 }}
+                    transition={{ duration: 0.18 }}>
+                    <Sun size={14} />
+                  </motion.div>
+                ) : (
+                  <motion.div key="moon"
+                    initial={{ scale: 0, rotate: 90 }}
+                    animate={{ scale: 1, rotate: 0 }}
+                    exit={{ scale: 0, rotate: -90 }}
+                    transition={{ duration: 0.18 }}>
+                    <Moon size={14} />
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </motion.button>
 
-            <AnimatePresence>
-              {dropdownOpen && (
+            {/* Demo toggle */}
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={toggleDemo}
+              className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-[12px] font-semibold transition-all duration-200 ${
+                isDemo
+                  ? "bg-amber-50 dark:bg-amber-500/12 border-amber-300 dark:border-amber-500/30 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-500/18"
+                  : "bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700/60 hover:text-slate-600 dark:hover:text-slate-300"
+              }`}
+              title={isDemo ? "Demo rejim yoniq" : "Demo rejimni yoqish"}
+            >
+              <FlaskConical size={11} />
+              <span>Demo</span>
+              <div className={`w-7 h-3.5 rounded-full relative transition-colors duration-200 ${isDemo ? "bg-amber-400" : "bg-slate-200 dark:bg-slate-600"}`}>
                 <motion.div
-                  initial={{ opacity: 0, y: 6, scale: 0.96 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 6, scale: 0.96 }}
-                  transition={{ duration: 0.15, ease: "easeOut" }}
-                  className="absolute right-0 top-full mt-2 w-56 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-50"
-                >
-                  <div className="px-4 py-3.5 border-b border-slate-50 bg-slate-50/50">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary-700 to-primary-500 flex items-center justify-center text-white font-bold text-sm">
-                        {user?.full_name?.[0]}
-                      </div>
-                      <div>
-                        <p className="font-semibold text-slate-800 text-sm leading-tight">{user?.full_name}</p>
-                        <p className="text-xs text-slate-400 mt-0.5 truncate max-w-[140px]">{user?.email}</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="p-2">
-                    {user?.branch && (
-                      <div className="px-3 py-1.5 text-xs text-slate-500 flex items-center gap-1.5">
-                        <span className="text-base">📍</span> {user.branch}
-                      </div>
-                    )}
-                    <button
-                      onClick={handleLogout}
-                      className="w-full flex items-center gap-2 px-3 py-2 text-sm font-medium text-red-500 hover:bg-red-50 rounded-xl transition-colors mt-1"
+                  animate={{ x: isDemo ? 14 : 2 }}
+                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                  className="absolute top-0.5 w-2.5 h-2.5 bg-white rounded-full shadow-sm"
+                />
+              </div>
+            </motion.button>
+
+            <div className="hidden sm:block w-px h-5 bg-slate-200 dark:bg-slate-700 mx-1" />
+
+            {/* User menu */}
+            <div className="relative">
+              <motion.button
+                whileTap={{ scale: 0.97 }}
+                onClick={() => setDropdownOpen((v) => !v)}
+                className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/70 transition-colors"
+              >
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-700 to-blue-500 flex items-center justify-center text-white font-bold text-sm shrink-0 shadow-sm">
+                  {user?.full_name?.[0] || "U"}
+                </div>
+                <div className="hidden sm:block text-left leading-none">
+                  <p className="text-slate-800 dark:text-slate-100 text-[13px] font-semibold">{user?.full_name?.split(" ")[0]}</p>
+                  <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-md mt-0.5 inline-block ${roleInfo.cls}`}>
+                    {roleInfo.label}
+                  </span>
+                </div>
+                <ChevronDown
+                  size={13}
+                  className={`text-slate-400 dark:text-slate-500 transition-transform duration-200 hidden sm:block ${dropdownOpen ? "rotate-180" : ""}`}
+                />
+              </motion.button>
+
+              <AnimatePresence>
+                {dropdownOpen && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setDropdownOpen(false)} />
+                    <motion.div
+                      initial={{ opacity: 0, y: 6, scale: 0.96 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 6, scale: 0.96 }}
+                      transition={{ duration: 0.14, ease: "easeOut" }}
+                      className="absolute right-0 top-full mt-2 w-56 rounded-2xl shadow-xl overflow-hidden z-50
+                                 bg-white dark:bg-slate-900
+                                 border border-slate-100 dark:border-slate-700/60"
                     >
-                      <LogOut size={14} />
-                      Chiqish
-                    </button>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                      <div className="px-4 py-3.5 border-b border-slate-100 dark:border-slate-700/60 bg-gradient-to-r from-slate-50 to-white dark:from-slate-800/60 dark:to-slate-900/60">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-700 to-blue-500 flex items-center justify-center text-white font-bold text-sm">
+                            {user?.full_name?.[0]}
+                          </div>
+                          <div>
+                            <p className="font-semibold text-slate-800 dark:text-slate-100 text-sm leading-tight">{user?.full_name}</p>
+                            <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5 truncate max-w-[140px]">{user?.email}</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-2">
+                        {user?.branch && (
+                          <div className="px-3 py-1.5 text-[12px] text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                            <span>📍</span> {user.branch}
+                          </div>
+                        )}
+                        <button
+                          onClick={handleLogout}
+                          className="w-full flex items-center gap-2 px-3 py-2.5 text-sm font-semibold text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl transition-colors mt-0.5"
+                        >
+                          <LogOut size={14} />
+                          Chiqish
+                        </button>
+                      </div>
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>
+            </div>
+
           </div>
         </div>
       </div>
